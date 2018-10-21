@@ -1,8 +1,19 @@
 import numpy as np
 import math
 
-row_in = np.random.rand(1,2)
-out_y = np.array([0])
+# row_in = np.random.rand(1, 6)
+# out_y = np.array([0])
+tr_set = np.array([  [1,1,1,2,3,1,2],
+                    [1,1,2,1,1,1,2],
+                    [0,1,2,1,1,2,1],
+                    [0,1,2,1,1,3,1],
+                    [0,1,2,1,1,4,2],
+                    [1,1,2,1,2,1,1],
+                    [0,1,2,1,2,3,1],
+                    [0,1,2,1,2,3,2],
+                    [0,1,2,1,2,4,2],
+                    [0,1,2,1,3,2,1],
+                    [0,1,2,1,3,4,2]])
 
 # testing 2 * 3 * 2 network stochastic fully connected
 
@@ -12,7 +23,6 @@ out_y = np.array([0])
 
 
 class NeuralNet:
-
 
     def __init__(self):
         self.layer_list = list()
@@ -31,6 +41,14 @@ class NeuralNet:
                 actual_input = next_input                   # input vector for the next layer. Last actual_input is
                                                             # just the output vector (=results)
 
+    def feedforward2(self, row_input):                  # previous function was cycling 2 times over the dataset -
+        actual_input = row_input                        # useful only for testing a single feedforward
+        for i in range(len(self.layer_list)):
+            layer = self.layer_list[i]
+            layer.compute_input_layer(actual_input)
+            next_input = layer.compute_squash_layer()
+            actual_input = next_input
+
     def compute_delta_output_layer(self, target):
         output_layer = self.layer_list[-1]
         for neuron in output_layer.neurons:
@@ -43,7 +61,7 @@ class NeuralNet:
             layer = self.layer_list[i-1]                    # TODO: Check this iteration 'cause i'm not really sure about it
             next_layer = self.layer_list[i]
             for j, neuron in enumerate(layer.neurons):
-                neuron.compute_delta_hidden(next_layer, j)    # j is equal to the index of neuron-> retrieve its weights
+                neuron.compute_delta_hidden(next_layer, j)  # j is equal to the index of neuron-> retrieve its weights
 
     def update_weights(self, learning_rate=0.001):          # Updating weights: w_new += delta_Wji
         for layer in self.layer_list:                       # where delta_Wji = lr * delta_j * input_ji
@@ -51,7 +69,19 @@ class NeuralNet:
                 for i in range(len(neuron.weights[0])):
                     new_weight = neuron.weights[0, i] * learning_rate * neuron.delta * neuron.network_in
                     neuron.weights[0, 1] = new_weight
-        return
+
+    def training(self, n_epochs, tr_set):
+        for i in range(n_epochs):
+            print("\nEPOCH {} ___________________________".format(n_epochs + 1))
+            for i in range(len(tr_set)):
+                print(f"Training_sample {i+1} of {len(tr_set)}")
+                tr_in = tr_set[i]
+                target = tr_in[0]
+                self.feedforward2(tr_in[1:])
+                self.compute_delta_output_layer(target)
+                self.compute_delta_hidden_layer()
+                self.update_weights()
+
 
 
 class Layer:
@@ -82,7 +112,7 @@ class Neuron:
         self.delta = 0.00
 
     def compute_network_in(self, row_inputs):
-        self.network_in = np.dot(row_inputs, self.weights.T)        # return an ndarray object !
+        self.network_in = np.dot(row_inputs, self.weights.T)                    # return an ndarray object !
         return self.network_in
 
     def get_weight(self):
@@ -100,9 +130,9 @@ class Neuron:
     def compute_delta_hidden(self, next_layer, index_of_nueron_prev_layer):
         derivative_activation_function = self.output * (1 - self.output)          # for sigmoidal activation function
         hidden_error = 0.00
-        for neuron in next_layer.neurons:
-            hidden_error += neuron.delta * neuron.weights[0, index_of_nueron_prev_layer]        # hidden_error = Delta next_layer neuron
-        # print(f"For Neuron: hidden error: {hidden_error}")                                      # multplied by weight[j] next_layer neuron
+        for neuron in next_layer.neurons:                                                   # hidden_error = Delta next_layer neuron
+            hidden_error += neuron.delta * neuron.weights[0, index_of_nueron_prev_layer]    # multplied by weight[j] next_layer neuron
+        # print(f"For Neuron: hidden error: {hidden_error}")
         delta_hidden = hidden_error * derivative_activation_function
         # print(delta_hidden)
         self.delta = delta_hidden
@@ -119,8 +149,8 @@ def sigmoid_function(x):
 if __name__ == "__main__":
     # structure testing
     nn = NeuralNet()  # initialize empty network = list containing layers
-    nn.initialize_layer(2, 2)  # set a first in layer (2 neuron, 2 weights each)
-    nn.initialize_layer(3, 2)  # set hidden layer (3 neuron, 2 weights each)
+    nn.initialize_layer(6, 6)  # set a first in layer (2 neuron, 2 weights each)
+    nn.initialize_layer(3, 6)  # set hidden layer (3 neuron, 2 weights each)
     nn.initialize_layer(2, 3)  # set out_layer (2 neuron, 3 weights each)
 
     print("Weights as initialized")
@@ -128,12 +158,18 @@ if __name__ == "__main__":
         for neuron in layer.neurons:
             print(neuron.weights)
 
-    nn.feedforward(row_in)
-    nn.compute_delta_output_layer(out_y)
-    nn.compute_delta_hidden_layer()
-    nn.update_weights()
+    nn.training(100, tr_set)
 
     print("\nWeights after first update")
     for layer in nn.layer_list:
         for neuron in layer.neurons:
             print(neuron.weights)
+
+
+    # nn.feedforward(row_in)
+    # nn.compute_delta_output_layer(out_y)
+    # nn.compute_delta_hidden_layer()
+    # nn.update_weights()
+
+
+
