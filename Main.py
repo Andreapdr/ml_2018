@@ -33,14 +33,17 @@ class NeuralNet:
     def compute_delta_output_layer(self, target):
         output_layer = self.layer_list[-1]
         for neuron in output_layer.neurons:
-            print(neuron.compute_delta_output(target))
+            neuron.compute_delta_output(target)
+            # print(neuron.compute_delta_output(target))
 
     def compute_delta_hidden_layer(self):
         for i in range(len(self.layer_list)-1, 0, -1):      # iterate the layer_list in reverse order starting
+            print(f"evaluating_delta for layer {i}")
             layer = self.layer_list[i-1]                    # TODO: Check this iteration 'cause i'm not really sure about it
             next_layer = self.layer_list[i]
-            for neuron in layer.neurons:
-                neuron.compute_delta_hidden(next_layer)
+            for j, neuron in enumerate(layer.neurons):
+                # print(f"enumerating neuron: {j}")
+                neuron.compute_delta_hidden(next_layer, j)    # j is equal to the index of neuron-> retrieve its weights
 
 
 class Layer:
@@ -62,8 +65,6 @@ class Layer:
         return self.out_vector
 
 
-
-
 class Neuron:
 
     def __init__(self, n_weights):
@@ -71,7 +72,7 @@ class Neuron:
         self.network_in = 0.00
         self.output = 0.00
         self.delta_out = 0.00
-        self.delta_hiddent = 0.00
+        self.delta_hidden = 0.00
 
     def compute_network_in(self, row_inputs):
         self.network_in = np.dot(row_inputs, self.weights.T)        # return an ndarray object !
@@ -89,12 +90,18 @@ class Neuron:
         self.delta_out = (target - self.output) * derivative_activation_function
         return self.delta_out
 
-    def compute_delta_hidden(self, next_layer):
+    def compute_delta_hidden(self, next_layer, index_of_nueron_prev_layer):
         derivative_activation_function = self.output * (1 - self.output)          # for sigmoidal activation function
         hidden_error = 0.00
+        for neuron in next_layer.neurons:
+            hidden_error += neuron.delta_out * neuron.weights[0, index_of_nueron_prev_layer]    # hidden_error = Delta next_layer neuron
+        print(f"For Neuron: hidden error: {hidden_error}")                                      # multplied by weight[j] next_layer neuron
+        delta_hidden = hidden_error * derivative_activation_function
+        # print(delta_hidden)
+        self.delta_hidden = delta_hidden
+        return delta_hidden
 
 
-        # self.delta_out =
 # the weight matrix at level t could be implemented as a matrix of weights.
 
 
@@ -102,31 +109,12 @@ def sigmoid_function(x):
     return 1 / (1 + math.exp(-x))
 
 
-# structure testing
-nn = NeuralNet()                                # initialize empty network = list containing layers
-nn.initialize_layer(3, 2)                       # set first layer (3 neuron, 2 weights each)
-nn.initialize_layer(2, 3)                       # set out_layer (2 neuron, 3 weights each)
+if __name__ == "__main__":
+    # structure testing
+    nn = NeuralNet()  # initialize empty network = list containing layers
+    nn.initialize_layer(3, 2)  # set first layer (3 neuron, 2 weights each)
+    nn.initialize_layer(2, 3)  # set out_layer (2 neuron, 3 weights each)
 
-nn.feedforward(row_in)
-nn.compute_delta_output_layer(out_y)
-nn.compute_delta_hidden_layer()
-
-
-
-
-
-
-# nn.layer_list[0].compute_input_layer(row_in)
-# nn.layer_list[0].compute_squash_layer()
-#
-# hl = nn.layer_list[0].neurons
-
-
-# for elem in hl:
-#     print(elem.output)
-#
-# ol = nn.layer_list[1].neurons
-#
-# for elem in ol:
-#     print(elem.weights)
-
+    nn.feedforward(row_in)
+    nn.compute_delta_output_layer(out_y)
+    nn.compute_delta_hidden_layer()
