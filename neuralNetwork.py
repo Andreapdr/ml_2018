@@ -46,18 +46,24 @@ class NeuralNet:
         for layer in self.layer_list:                       # where delta_Wji = lr * delta_j * input_ji
             for neuron in layer.neurons:
                 for i in range(len(neuron.weights[0])):
-                    new_weight = neuron.weights[0, i] * learning_rate * neuron.delta * neuron.network_in
+                    new_weight = neuron.weights[0, i] * learning_rate * neuron.delta * neuron.network_in  # TODO: check if neuron.network_in is actually x_ji
                     neuron.weights[0, 1] = new_weight
 
-    def training(self, n_epochs, tr_set):
+    def training(self, n_epochs, tr_set, verbose=False):
         for j in range(n_epochs):
             print("\nEPOCH {} ___________________________".format(j + 1))
             for i in range(len(tr_set)):
-                print(f"Training_sample {i+1} of {len(tr_set)}")
-                tr_in = tr_set[i]
-                target = tr_in[0]
-                self.feedforward2(tr_in[1:])
+                if verbose:
+                    print(f"Training_sample {i+1} of {len(tr_set)}")
+                tr_in, target = self.preprocess_monk_dataset(tr_set[i])
+                self.feedforward2(tr_in)
                 self.compute_delta_output_layer(target)
                 self.compute_delta_hidden_layer()
                 self.update_weights()
+
+    def preprocess_monk_dataset(self, tr_set_row):
+        tr_row = tr_set_row[:-1]                        # for MonkDataset -> remove last column and set
+        tr_in = tr_row[1:]                              # features and first column as target desired output
+        target = tr_row[0]
+        return tr_in, target
 
