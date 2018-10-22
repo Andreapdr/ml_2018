@@ -6,7 +6,7 @@ class Layer:
 
     def __init__(self, n_neurons, n_neurons_weights):
         self.neurons = list()
-        self.out_vector = np.empty([1, n_neurons])
+        self.out_vector = np.ones([1, n_neurons])
         for i in range(n_neurons):
             self.neurons.append(Neuron(n_neurons_weights))
 
