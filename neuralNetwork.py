@@ -62,10 +62,10 @@ class NeuralNet:
                 epoch_error = 0.00
                 if verbose:
                     print(f"Training_sample {i+1} of {len(tr_set)}")
-                tr_in, target = self.preprocess_monk_dataset(tr_set[i])
-                #
-                # tr_in = tr_set[i][:-1]
-                # target = tr_set[i][-1]
+                tr_in = tr_set[i][:-1]
+                target = tr_set[i][-1]
+                if monksDataset:
+                    tr_in, target = self.preprocess_monk_dataset(tr_set[i])
                 self.feedforward2(tr_in)
                 err_out = self.compute_delta_output_layer(target)
                 err_hid = self.compute_delta_hidden_layer()
