@@ -14,7 +14,6 @@ class NeuralNet:
         for j in range(len(row_input)):                 # for every row of training_set (== for every instance sample)
             for i in range(len(self.layer_list)):       # for every layer starting from input
                 layer = self.layer_list[i]
-                # for INPUT LAYER (i == 0)
                 layer.compute_input_layer(actual_input)     # compute the layer input for every node (w_nodej * input_x)
                 next_input = layer.compute_squash_layer()   # compute sigmoid squashing and create from the values an
                 actual_input = next_input                   # input vector for the next layer. Last actual_input is
@@ -33,7 +32,7 @@ class NeuralNet:
         output_layer = self.layer_list[-1]
         for neuron in output_layer.neurons:
             err = neuron.compute_delta_output(target)
-            error_output_layer += err ** 2
+            error_output_layer += 0.5 * (err ** 2)          # Not entirely sure about this error calculation
             # print(neuron.compute_delta_output(target))
         return error_output_layer
 
@@ -51,7 +50,7 @@ class NeuralNet:
         for layer in self.layer_list:                       # where delta_Wji = lr * delta_j * input_ji
             for neuron in layer.neurons:
                 for i in range(len(neuron.weights[0])):
-                    # new_weight = neuron.weights[0, i] + learning_rate * neuron.delta * neuron.network_in  # TODO: check if neuron.network_in is actually x_ji
+                    # new_weight = neuron.weights[0, i] + learning_rate * neuron.delta * neuron.network_in                # TODO: check if neuron.network_in is actually x_ji
                     new_weight = neuron.weights[0, i] + learning_rate * neuron.delta * neuron.inputs_list[0, i]
                     neuron.weights[0, i] = new_weight
 
@@ -71,7 +70,7 @@ class NeuralNet:
                 err_hid = self.compute_delta_hidden_layer()
                 epoch_error += err_out
                 self.update_weights(learning_rate)
-            print(f"Total Error for Epoch: {round(epoch_error, 10)}")
+            print(f"Total Error for Epoch: {round(epoch_error, 5)}")
 
     def preprocess_monk_dataset(self, tr_set_row):
         tr_row = tr_set_row[:-1]                        # for MonkDataset -> remove last column and set
