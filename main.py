@@ -1,5 +1,6 @@
 import numpy as np
 from neuralNetwork import NeuralNet
+import matplotlib.pyplot as plt
 
 
 def preprocess_dataset(name_csv):
@@ -22,15 +23,27 @@ if __name__ == "__main__":
     nn.initialize_layer(3, 6)   # set a first in layer (3 neuron, 6 weights each)
     nn.initialize_layer(3, 3)   # set hidden layer (3 neuron, 3 weights each)
     nn.initialize_layer(1, 3)   # set out_layer (1 neuron, 3 weights each)
-    nn.training(150, dataset, learning_rate=0.002, verbose=False, monksDataset=True)
+    nn.training(350, dataset, learning_rate=0.002, verbose=False, monksDataset=True)
+
+    # TEST PLOTTING
+    cord_x = list()
+    cord_y = list()
+    for elem in nn.error_list:
+        cord_x.append(elem[0])
+        cord_y.append(elem[1])
+    plt.plot(cord_x, cord_y, )
+    plt.xlabel("Epochs number")
+    plt.ylabel("Error")
+    plt.show()
 
     # Test Purpose network
     # nn = NeuralNet()
-    # nn.initialize_layer(3, 3)
-    # nn.initialize_layer(3, 3)
-    # nn.initialize_layer(1, 3)
-    # nn.training(10, test_data, learning_rate=0.5, monksDataset=False)
+    # nn.initialize_layer(150, 6)
+    # nn.initialize_layer(150, 150)
+    # nn.initialize_layer(1, 150)
 
+    # nn.training(1000, test_data, learning_rate=0.5, monksDataset=False)
+    # nn.training(1000, dataset, learning_rate=0.5, verbose=False, monksDataset=True)
 # TODO: implement a way to assess error in training
 # TODO: INCLUDE BIAS IN ALGORITHM/WHOLE CODE
 # TODO: implement momentum
