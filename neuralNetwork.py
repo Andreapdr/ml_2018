@@ -20,6 +20,7 @@ class NeuralNet:
             if i == len(self.layer_list)-1:
                 layer.compute_squash_layer()
                 return
+            # TODO: FIND OUY WHY I HAVE TO ADD [0]
             next_input = layer.compute_squash_layer()[0]
             actual_input = next_input
 
@@ -28,7 +29,6 @@ class NeuralNet:
             layer = self.layer_list[i]
             layer.compute_input_layer(nn_input)
 
-    # Not entirely sure about this error calculation
     def compute_delta_output_layer(self, target):
         error_output_layer = 0.00
         output_layer = self.layer_list[-1]
@@ -38,7 +38,6 @@ class NeuralNet:
             error_output_layer += 0.5 * (err ** 2)
         return error_output_layer
 
-    # TODO: Check this iteration 'cause i'm not really sure about it
     # iterate the layer_list in reverse order starting
     # j is equal to the index of neuron-> retrieve its weights
     def compute_delta_hidden_layer(self):
@@ -64,18 +63,23 @@ class NeuralNet:
                     new_weight = neuron.weights[0, i] + weight_update
                     neuron.weights[0, i] = new_weight
 
-    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.05, verbose=False, monksDataset=False):
-        current_learning_rate =learning_rate
+    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.00, verbose=False, monksDataset=False,
+                 step_decay=False, lr_decay = False):
+        current_learning_rate = learning_rate
         for j in range(n_epochs):
             print("\nEPOCH {} ___________________________".format(j + 1))
             epoch_error = 0.00
             # use different order of patterns in different epochs
             np.random.shuffle(tr_set)
-            # learning rate decreases through epochs
-            current_learning_rate -= 0.001
+            # STEP DECAY: learning rate is cut by 10 every 10 epochs
+            if step_decay:
+                if j % 10 == 0 and j != 0:
+                    current_learning_rate = current_learning_rate/10
+            if lr_decay:
+                current_learning_rate -= 0.001
             for i in range(len(tr_set)):
-                # if verbose:
-                #     print(f"Training_sample {i+1} of {len(tr_set)}")
+                if verbose:
+                    print(f"Training_sample {i+1} of {len(tr_set)}")
                 tr_in = tr_set[i][:-1]
                 target = tr_set[i][-1]
                 if monksDataset:
@@ -85,7 +89,7 @@ class NeuralNet:
                 self.compute_delta_hidden_layer()
                 epoch_error += err_out
                 self.update_weights(learning_rate, momentum)
-            print(f"Total Error for Epoch: {round(epoch_error, 5)}")
+            print(f'Total Error for Epoch: {round(epoch_error, 5)}')
             self.error_list.append((j, epoch_error))
         print(f"Final NN: Weights:")
         for layer in self.layer_list:
@@ -105,9 +109,6 @@ class NeuralNet:
             correct_predictions += 1 - abs(target - nn_output)
         print("Accuracy:")
         print(correct_predictions/len(test_set))
-
-
-
 
     # for MonkDataset -> remove last column and set
     # features and first column as target desired output

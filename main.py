@@ -16,7 +16,6 @@ if __name__ == "__main__":
 
     training_set = preprocess_dataset(train_csv)
     test_set = preprocess_dataset(test_csv)
-    # test_data = np.array([[1, 2, 3, 10]])       # Watch out: length of dataset and test_data is computed DIFFERENTLY
 
     ''' NB: every layer must have as many weights as the previous layer's neuron
         SET NETWORK STRUCTURE WITH APPROPRIATE WEIGHT AMOUNTS AND LAYERS
@@ -27,19 +26,24 @@ if __name__ == "__main__":
     nn.initialize_layer(1, 3)   # set out_layer (1 neuron, 3 weights each)
 
     # TRAINING SESSION
-    nn.training(450, training_set, learning_rate=0.10, momentum=0.01, verbose=False, monksDataset=True)
+    lr = 0.10
+    momentum = 0.00
+    nn.training(500, training_set, lr, momentum, verbose=False, monksDataset=True,
+                step_decay=False, lr_decay=False)
 
     # TEST SESSION
     nn.test(test_set, monksDataset=True)
 
     # TEST PLOTTING
     # TODO: TO BETTER IMPLEMENT
+    # plt.figure(figsize=(9, 8))
+    plt.title(f"Loss Function plot. \nlr: {lr}, momentum: {momentum}")
     cord_x = list()
     cord_y = list()
     for elem in nn.error_list:
         cord_x.append(elem[0])
         cord_y.append(elem[1])
-    plt.plot(cord_x, cord_y, )
+    plt.plot(cord_x, cord_y)
     plt.xlabel("Epochs number")
     plt.ylabel("Error")
     plt.show()
