@@ -4,16 +4,19 @@ import matplotlib.pyplot as plt
 
 
 def preprocess_dataset(name_csv):
+    # TODO: TO BETTER IMPLEMENT
     dataset_np = np.genfromtxt(name_csv, delimiter=",")
     return dataset_np
 
 
 if __name__ == "__main__":
-    name_csv = "monk_dataset.csv"
 
-    dataset = preprocess_dataset(name_csv)
-    np.random.shuffle(dataset)                  # Shuffle dataset to prevent stagnation on input patterns
-    test_data = np.array([[1, 2, 3, 10]])       # Watch out: length of dataset and test_data is computed DIFFERENTLY
+    train_csv = "monk_dataset.csv"
+    test_csv = "monk_dataset_test.csv"
+
+    training_set = preprocess_dataset(train_csv)
+    test_set = preprocess_dataset(test_csv)
+    # test_data = np.array([[1, 2, 3, 10]])       # Watch out: length of dataset and test_data is computed DIFFERENTLY
 
     ''' NB: every layer must have as many weights as the previous layer's neuron
         SET NETWORK STRUCTURE WITH APPROPRIATE WEIGHT AMOUNTS AND LAYERS
@@ -21,11 +24,16 @@ if __name__ == "__main__":
 
     nn = NeuralNet()            # initialize empty network = list containing layers
     nn.initialize_layer(3, 6)   # set a first in layer (3 neuron, 6 weights each)
-    nn.initialize_layer(3, 3)   # set hidden layer (3 neuron, 3 weights each)
     nn.initialize_layer(1, 3)   # set out_layer (1 neuron, 3 weights each)
-    nn.training(350, dataset, learning_rate=0.002, verbose=False, monksDataset=True)
+
+    # TRAINING SESSION
+    nn.training(450, training_set, learning_rate=0.10, momentum=0.01, verbose=False, monksDataset=True)
+
+    # TEST SESSION
+    nn.test(test_set, monksDataset=True)
 
     # TEST PLOTTING
+    # TODO: TO BETTER IMPLEMENT
     cord_x = list()
     cord_y = list()
     for elem in nn.error_list:
@@ -35,16 +43,4 @@ if __name__ == "__main__":
     plt.xlabel("Epochs number")
     plt.ylabel("Error")
     plt.show()
-
-    # Test Purpose network
-    # nn = NeuralNet()
-    # nn.initialize_layer(150, 6)
-    # nn.initialize_layer(150, 150)
-    # nn.initialize_layer(1, 150)
-
-    # nn.training(1000, test_data, learning_rate=0.5, monksDataset=False)
-    # nn.training(1000, dataset, learning_rate=0.5, verbose=False, monksDataset=True)
-# TODO: implement a way to assess error in training
-# TODO: INCLUDE BIAS IN ALGORITHM/WHOLE CODE
-# TODO: implement momentum
 

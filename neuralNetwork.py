@@ -1,3 +1,4 @@
+import numpy as np
 from layer import Layer
 
 
@@ -14,16 +15,18 @@ class NeuralNet:
     def feedforward(self, row_input):
         actual_input = row_input
         for i in range(len(self.layer_list)):
-            # TODO: TESTING - TO CLEAN UP
-            # if i == len(self.layer_list)-1:
-                # Need to convert last input to 1 if >0.5
-                # layer = self.layer_list[i]
-                # layer.compute_squash_layer_final()
-                # return
             layer = self.layer_list[i]
             layer.compute_input_layer(actual_input)
+            if i == len(self.layer_list)-1:
+                layer.compute_squash_layer()
+                return
             next_input = layer.compute_squash_layer()[0]
             actual_input = next_input
+
+    def compute_output(self, nn_input):
+        for i in range(len(self.layer_list)):
+            layer = self.layer_list[i]
+            layer.compute_input_layer(nn_input)
 
     # Not entirely sure about this error calculation
     def compute_delta_output_layer(self, target):
@@ -50,17 +53,26 @@ class NeuralNet:
 
     # Updating weights: w_new += delta_Wji
     # where delta_Wji = lr * delta_j * input_ji
-    def update_weights(self, learning_rate):
+    def update_weights(self, learning_rate, momentum):
+        previous_weight_update = 0.0
         for layer in self.layer_list:
             for neuron in layer.neurons:
                 for i in range(len(neuron.weights[0])):
-                    new_weight = neuron.weights[0, i] + learning_rate * neuron.delta * neuron.inputs_list[0, i]
+                    momentum_term = momentum * previous_weight_update
+                    weight_update = momentum_term + learning_rate * neuron.delta * neuron.inputs_list[0, i]
+                    previous_weight_update = weight_update
+                    new_weight = neuron.weights[0, i] + weight_update
                     neuron.weights[0, i] = new_weight
 
-    def training(self, n_epochs, tr_set, learning_rate=0.001, verbose=False, monksDataset=False):
+    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.05, verbose=False, monksDataset=False):
+        current_learning_rate =learning_rate
         for j in range(n_epochs):
             print("\nEPOCH {} ___________________________".format(j + 1))
             epoch_error = 0.00
+            # use different order of patterns in different epochs
+            np.random.shuffle(tr_set)
+            # learning rate decreases through epochs
+            current_learning_rate -= 0.001
             for i in range(len(tr_set)):
                 # if verbose:
                 #     print(f"Training_sample {i+1} of {len(tr_set)}")
@@ -70,11 +82,32 @@ class NeuralNet:
                     tr_in, target = self.preprocess_monk_dataset(tr_set[i])
                 self.feedforward(tr_in)
                 err_out = self.compute_delta_output_layer(target)
-                err_hid = self.compute_delta_hidden_layer()
+                self.compute_delta_hidden_layer()
                 epoch_error += err_out
-                self.update_weights(learning_rate)
+                self.update_weights(learning_rate, momentum)
             print(f"Total Error for Epoch: {round(epoch_error, 5)}")
             self.error_list.append((j, epoch_error))
+        print(f"Final NN: Weights:")
+        for layer in self.layer_list:
+            for neuron in layer.neurons:
+                print(neuron.weights)
+
+    def test(self, test_set, monksDataset=False):
+        print("\nTest results:______________________")
+        correct_predictions = 0
+        for i in range(len(test_set)):
+            test_in = test_set[i][:-1]
+            target = test_set[i][-1]
+            if monksDataset:
+                test_in, target = self.preprocess_monk_dataset(test_set[i])
+            self.feedforward(test_in)
+            nn_output = self.layer_list[1].neurons[0].compute_output_final()
+            correct_predictions += 1 - abs(target - nn_output)
+        print("Accuracy:")
+        print(correct_predictions/len(test_set))
+
+
+
 
     # for MonkDataset -> remove last column and set
     # features and first column as target desired output

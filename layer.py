@@ -20,8 +20,3 @@ class Layer:
             self.out_vector[0, i] = r
         return self.out_vector
 
-    def compute_squash_layer_final(self):
-        for i in range(len(self.neurons)):
-            r = self.neurons[i].compute_output_final()
-            self.out_vector[0, i] = r
-        return  self.out_vector
