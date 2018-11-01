@@ -1,6 +1,6 @@
 import numpy as np
 from layer import Layer
-from pprint import pprint
+
 
 class NeuralNet:
 
@@ -35,8 +35,7 @@ class NeuralNet:
         for neuron in output_layer.neurons:
             err = neuron.compute_delta_output(target)
             # TODO: CHECK CODE HERE
-            # error_output_layer += 0.5 * (err ** 2)
-            error_output_layer += (err ** 2)
+            error_output_layer += 0.5 * (err ** 2)
         return error_output_layer
 
     # iterate the layer_list in reverse order starting
@@ -64,8 +63,8 @@ class NeuralNet:
                     new_weight = neuron.weights[0, i] + weight_update
                     neuron.weights[0, i] = new_weight
 
-    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.00, verbose=False,
-                 step_decay=False, lr_decay=False):
+    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.00, verbose=False, monksDataset=False,
+                 step_decay=False, lr_decay = False):
         current_learning_rate = learning_rate
         for j in range(n_epochs):
             print("\nEPOCH {} ___________________________".format(j + 1))
@@ -81,33 +80,41 @@ class NeuralNet:
             for i in range(len(tr_set)):
                 if verbose:
                     print(f"Training_sample {i+1} of {len(tr_set)}")
-                # First elem of set == target
                 tr_in = tr_set[i][1:]
                 target = tr_set[i][0]
+                if monksDataset:
+                    tr_in, target = self.preprocess_monk_dataset(tr_set[i])
                 self.feedforward(tr_in)
                 err_out = self.compute_delta_output_layer(target)
                 self.compute_delta_hidden_layer()
                 epoch_error += err_out
                 self.update_weights(learning_rate, momentum)
-            print(f'Total Error for Epoch: {round(epoch_error/len(tr_set), 5)}')
-            # Compute normalization of squared error --> ( epoch_error/len(tr(set)))
-            self.error_list.append((j, epoch_error/len(tr_set)))
-        if verbose:
-            print(f"Final NN: Weights:")
-            for layer in self.layer_list:
-                for neuron in layer.neurons:
-                    pprint(neuron.weights)
+            print(f'Total Error for Epoch: {round(epoch_error, 5)}')
+            self.error_list.append((j, epoch_error))
+        print(f"Final NN: Weights:")
+        for layer in self.layer_list:
+            for neuron in layer.neurons:
+                print(neuron.weights)
 
-    def test(self, test_set):
-        print("\nTEST RESULTS___________________________________________")
+    def test(self, test_set, monksDataset=False):
+        print("\nTest results:______________________")
         correct_predictions = 0
         for i in range(len(test_set)):
             test_in = test_set[i][1:]
             target = test_set[i][0]
+            if monksDataset:
+                test_in, target = self.preprocess_monk_dataset(test_set[i])
             self.feedforward(test_in)
             nn_output = self.layer_list[1].neurons[0].compute_output_final()
             correct_predictions += 1 - abs(target - nn_output)
-        print(f"\nAccuracy: {correct_predictions/len(test_set)}\n"
-              f"Total Predictions: {len(test_set)}")
+        print("Accuracy:")
+        print(correct_predictions/len(test_set))
 
+    # for MonkDataset -> remove last column and set
+    # features and first column as target desired output
+    def preprocess_monk_dataset(self, tr_set_row):
+        tr_row = tr_set_row[:-1]
+        tr_in = tr_row[1:]
+        target = tr_row[0]
+        return tr_in, target
 

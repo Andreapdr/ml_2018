@@ -3,48 +3,39 @@ from neuralNetwork import NeuralNet
 import matplotlib.pyplot as plt
 
 
-def get_dataset(name_csv):
+def preprocess_dataset(name_csv):
     # TODO: TO BETTER IMPLEMENT
     dataset_np = np.genfromtxt(name_csv, delimiter=",")
     return dataset_np
 
 
-def main():
-    # Standard Monk Dataset
+if __name__ == "__main__":
+
     train_csv = "dataset/monk1/monk1train.csv"
     test_csv = "dataset/monk1/monk1test.csv"
 
-    # One-Hot Encoded Monk Dataset (len=17 + 1, answer at index 0)
-    train_csv_one_hot = "dataset/monk2/monk2train_onehot.csv"
-    test_csv_one_hot = "dataset/monk2/monk2test_onehot.csv"
-
-    training_set = get_dataset(train_csv)
-    test_set = get_dataset(test_csv)
-    # training_set = get_dataset(train_csv_one_hot)
-    # test_set = get_dataset(test_csv_one_hot)
+    training_set = preprocess_dataset(train_csv)
+    test_set = preprocess_dataset(test_csv)
 
     ''' NB: every layer must have as many weights as the previous layer's neuron
-        SET NETWORK STRUCTURE WITH APPROPRIATE WEIGHT AMOUNTS AND LAYERS.    
-         Initialize empty network = list containing layers
-        set a first in layer (c neuron, d weights each)
-        set out_layer (e neuron, c weights each) '''
+        SET NETWORK STRUCTURE WITH APPROPRIATE WEIGHT AMOUNTS AND LAYERS
+        NB: SET ON PRE-PROCESSING MONK DATASET in TRAINING FUNCTION '''
 
-    nn = NeuralNet()
-    nn.initialize_layer(2, 6)
-    nn.initialize_layer(1, 2)
+    nn = NeuralNet()            # initialize empty network = list containing layers
+    nn.initialize_layer(3, 6)   # set a first in layer (3 neuron, 6 weights each)
+    nn.initialize_layer(1, 3)   # set out_layer (1 neuron, 3 weights each)
 
     # TRAINING SESSION
-    lr = 0.01
-    momentum = 0.0
-    nn.training(250, training_set, lr, momentum, verbose=False,
+    lr = 0.10
+    momentum = 0.50
+    nn.training(500, training_set, lr, momentum, verbose=False, monksDataset=False,
                 step_decay=False, lr_decay=False)
 
     # TEST SESSION
-    nn.test(test_set)
+    nn.test(test_set, monksDataset=False)
 
     # TEST PLOTTING
     # TODO: TO BETTER IMPLEMENT
-    # plt.figure(figsize=(9, 8))
     plt.title(f"Loss Function plot. \nlr: {lr}, momentum: {momentum}")
     cord_x = list()
     cord_y = list()
@@ -56,6 +47,3 @@ def main():
     plt.ylabel("Error")
     plt.show()
 
-
-if __name__ == "__main__":
-    main()

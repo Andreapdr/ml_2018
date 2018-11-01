@@ -34,9 +34,8 @@ class Neuron:
     # for sigmoidal activation function
     def compute_delta_output(self, target):
         derivative_activation_function = self.output * (1 - self.output)
-        error = target - self.output
         self.delta = (target - self.output) * derivative_activation_function
-        return error
+        return self.delta
 
     def compute_delta_hidden(self, next_layer, index_of_neuron_prev_layer):
         derivative_activation_function = self.output * (1 - self.output)
