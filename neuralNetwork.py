@@ -35,8 +35,8 @@ class NeuralNet:
         for neuron in output_layer.neurons:
             err = neuron.compute_delta_output(target)
             # TODO: CHECK CODE HERE
-            # error_output_layer += 0.5 * (err ** 2)
-            error_output_layer += (err ** 2)
+            error_output_layer += 0.5 * (err ** 2)
+            # error_output_layer += (err ** 2)
         return error_output_layer
 
     # iterate the layer_list in reverse order starting
