@@ -31,7 +31,7 @@ class Neuron:
         else:
             return 0
 
-    # for sigmoidal activation function
+    # for sigmoid activation function
     def compute_delta_output(self, target):
         derivative_activation_function = self.output * (1 - self.output)
         error = target - self.output

@@ -1,12 +1,7 @@
-import numpy as np
 from neuralNetwork import NeuralNet
 import matplotlib.pyplot as plt
-
-
-def get_dataset(name_csv):
-    # TODO: TO BETTER IMPLEMENT
-    dataset_np = np.genfromtxt(name_csv, delimiter=",")
-    return dataset_np
+from utils import get_dataset
+from pprint import pprint
 
 
 def main():
@@ -44,16 +39,24 @@ def main():
 
     # TEST PLOTTING
     # TODO: TO BETTER IMPLEMENT
-    # plt.figure(figsize=(9, 8))
-    plt.title(f"Loss Function plot. \nlr: {lr}, momentum: {momentum}")
+    # PLOT ACCURACY on validation and TEST
+    plt.title(f"Loss Function MSE. \nlr: {lr}, momentum: {momentum}")
     cord_x = list()
     cord_y = list()
+    acc_x = list()
+    acc_y = list()
     for elem in nn.error_list:
         cord_x.append(elem[0])
         cord_y.append(elem[1])
-    plt.plot(cord_x, cord_y)
-    plt.xlabel("Epochs number")
-    plt.ylabel("Error")
+    plt.plot(cord_x, cord_y, label="Error Rate")
+    # for elem in nn.accuracy_list:
+    #     acc_x.append(elem[0])
+    #     acc_y.append(elem[1])
+    # plt.plot(acc_x, acc_y, label="Accuracy")
+    # plt.xlabel("Epochs number")
+    # plt.ylabel("Error")
+    plt.legend()
+    plt.grid(True)
     plt.show()
 
 

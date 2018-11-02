@@ -2,11 +2,13 @@ import numpy as np
 from layer import Layer
 from pprint import pprint
 
+
 class NeuralNet:
 
     def __init__(self):
         self.layer_list = list()
         self.error_list = list()
+        self.accuracy_list = list()
 
     def initialize_layer(self, n_neuron, n_neuron_weights):
         self.layer_list.append(Layer(n_neuron, n_neuron_weights))
@@ -36,7 +38,6 @@ class NeuralNet:
             err = neuron.compute_delta_output(target)
             # TODO: CHECK CODE HERE
             error_output_layer += 0.5 * (err ** 2)
-            # error_output_layer += (err ** 2)
         return error_output_layer
 
     # iterate the layer_list in reverse order starting
@@ -70,6 +71,7 @@ class NeuralNet:
         for j in range(n_epochs):
             print("\nEPOCH {} ___________________________".format(j + 1))
             epoch_error = 0.00
+            epoch_accuracy = 0.00
             # use different order of patterns in different epochs
             np.random.shuffle(tr_set)
             # STEP DECAY: learning rate is cut by 10 every 10 epochs
@@ -78,9 +80,8 @@ class NeuralNet:
                     current_learning_rate = current_learning_rate/10
             if lr_decay:
                 current_learning_rate -= 0.001
+            # For every sample in dataset:
             for i in range(len(tr_set)):
-                if verbose:
-                    print(f"Training_sample {i+1} of {len(tr_set)}")
                 # First elem of set == target
                 tr_in = tr_set[i][1:]
                 target = tr_set[i][0]
@@ -89,9 +90,14 @@ class NeuralNet:
                 self.compute_delta_hidden_layer()
                 epoch_error += err_out
                 self.update_weights(learning_rate, momentum)
-            print(f'Total Error for Epoch: {round(epoch_error/len(tr_set), 5)}')
+                nn_output = self.layer_list[1].neurons[0].compute_output_final()
+                epoch_accuracy += 1 - abs(target - nn_output)
+                if verbose:
+                    print(f"Training_sample {i+1} of {len(tr_set)}")
+            print(f"Total Error for Epoch: {round(epoch_error/len(tr_set), 5)}")
             # Compute normalization of squared error --> ( epoch_error/len(tr(set)))
             self.error_list.append((j, epoch_error/len(tr_set)))
+            self.accuracy_list.append((j, epoch_accuracy/len(tr_set)))
         if verbose:
             print(f"Final NN: Weights:")
             for layer in self.layer_list:

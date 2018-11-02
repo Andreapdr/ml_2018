@@ -43,5 +43,10 @@ def write_one_hot(data, path_new):
         writer.writerows(data)
 
 
+def get_dataset(name_csv):
+    dataset_np = np.genfromtxt(name_csv, delimiter=",")
+    return dataset_np
+
+
 # from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
 # convert_to_one_hot("dataset/monk3/monk3test.csv", "dataset/monk3/monk3test_onehot.csv")
