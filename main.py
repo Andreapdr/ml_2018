@@ -11,17 +11,17 @@ def get_dataset(name_csv):
 
 def main():
     # Standard Monk Dataset
-    train_csv = "dataset/monk1/monk1train.csv"
-    test_csv = "dataset/monk1/monk1test.csv"
+    train_csv = "dataset/monk3/monk3train.csv"
+    test_csv = "dataset/monk3/monk3test.csv"
 
     # One-Hot Encoded Monk Dataset (len=17 + 1, answer at index 0)
-    train_csv_one_hot = "dataset/monk2/monk2train_onehot.csv"
-    test_csv_one_hot = "dataset/monk2/monk2test_onehot.csv"
+    train_csv_one_hot = "dataset/monk3/monk3train_onehot.csv"
+    test_csv_one_hot = "dataset/monk3/monk3test_onehot.csv"
 
-    training_set = get_dataset(train_csv)
-    test_set = get_dataset(test_csv)
-    # training_set = get_dataset(train_csv_one_hot)
-    # test_set = get_dataset(test_csv_one_hot)
+    # training_set = get_dataset(train_csv)
+    # test_set = get_dataset(test_csv)
+    training_set = get_dataset(train_csv_one_hot)
+    test_set = get_dataset(test_csv_one_hot)
 
     ''' NB: every layer must have as many weights as the previous layer's neuron
         SET NETWORK STRUCTURE WITH APPROPRIATE WEIGHT AMOUNTS AND LAYERS.    
@@ -30,14 +30,14 @@ def main():
         set out_layer (e neuron, c weights each) '''
 
     nn = NeuralNet()
-    nn.initialize_layer(2, 6)
-    nn.initialize_layer(1, 2)
+    nn.initialize_layer(3, 17)
+    nn.initialize_layer(1, 3)
 
     # TRAINING SESSION
-    lr = 0.01
+    lr = 0.30
     momentum = 0.0
     nn.training(250, training_set, lr, momentum, verbose=False,
-                step_decay=False, lr_decay=False)
+                step_decay=False, lr_decay=True)
 
     # TEST SESSION
     nn.test(test_set)
