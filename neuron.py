@@ -5,7 +5,7 @@ import math
 class Neuron:
 
     def __init__(self, n_weights):
-        self.weights = np.random.uniform(low=-0.50, high=0.50, size=(1, n_weights))
+        self.weights = np.random.uniform(low=-0.70, high=0.70, size=(1, n_weights))
         self.bias = 1.00
         self.inputs_list = np.ones((1, n_weights))
         self.network_in = 0.00

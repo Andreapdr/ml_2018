@@ -1,7 +1,6 @@
 from neuralNetwork import NeuralNet
 import matplotlib.pyplot as plt
 from utils import get_dataset
-from pprint import pprint
 
 
 def main():
@@ -24,23 +23,24 @@ def main():
         set a first in layer (c neuron, d weights each)
         set out_layer (e neuron, c weights each) '''
 
+    # INITIALIZATION
     nn = NeuralNet()
     nn.initialize_layer(3, 17)
     nn.initialize_layer(1, 3)
 
     # TRAINING SESSION
-    lr = 0.30
-    momentum = 0.0
-    nn.training(250, training_set, lr, momentum, verbose=False,
+    lr = 1.00
+    momentum = 0.3
+    alpha = 0.001
+    nn.training(50, training_set, lr, momentum, alpha, verbose=False,
                 step_decay=False, lr_decay=True)
 
     # TEST SESSION
     nn.test(test_set)
 
-    # TEST PLOTTING
+    # TRAINING SESSION PLOTTING
     # TODO: TO BETTER IMPLEMENT
-    # PLOT ACCURACY on validation and TEST
-    plt.title(f"Loss Function MSE. \nlr: {lr}, momentum: {momentum}")
+    plt.title(f"Error Function MSE. \nlr: {lr}, momentum: {momentum}")
     cord_x = list()
     cord_y = list()
     acc_x = list()

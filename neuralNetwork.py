@@ -34,7 +34,9 @@ class NeuralNet:
     def compute_delta_output_layer(self, target):
         error_output_layer = 0.00
         output_layer = self.layer_list[-1]
-        for neuron in output_layer.neurons:
+        for j, neuron in enumerate(output_layer.neurons):
+            # for multiple target values
+            # err = neuron.compute_delta_output(target[j])
             err = neuron.compute_delta_output(target)
             # TODO: CHECK CODE HERE
             error_output_layer += 0.5 * (err ** 2)
@@ -54,19 +56,21 @@ class NeuralNet:
 
     # Updating weights: w_new += delta_Wji
     # where delta_Wji = lr * delta_j * input_ji
-    def update_weights(self, learning_rate, momentum):
+    def update_weights(self, learning_rate, momentum, alpha):
         previous_weight_update = 0.0
         for layer in self.layer_list:
             for neuron in layer.neurons:
                 for i in range(len(neuron.weights[0])):
+                    # TODO: CHECK MOMENTUM
+                    # TODO: IMPLEMENT WEIGHT DECAY TIKHONOV
                     momentum_term = momentum * previous_weight_update
                     weight_update = momentum_term + learning_rate * neuron.delta * neuron.inputs_list[0, i]
                     previous_weight_update = weight_update
-                    new_weight = neuron.weights[0, i] + weight_update
+                    new_weight = neuron.weights[0, i] + weight_update - (2 * alpha * neuron.weights[0, i])
                     neuron.weights[0, i] = new_weight
 
-    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.00, verbose=False,
-                 step_decay=False, lr_decay=False):
+    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.00, alpha=0.00,
+                 step_decay=False, lr_decay=False, verbose=False):
         current_learning_rate = learning_rate
         for j in range(n_epochs):
             print("\nEPOCH {} ___________________________".format(j + 1))
@@ -89,7 +93,7 @@ class NeuralNet:
                 err_out = self.compute_delta_output_layer(target)
                 self.compute_delta_hidden_layer()
                 epoch_error += err_out
-                self.update_weights(learning_rate, momentum)
+                self.update_weights(learning_rate, momentum, alpha)
                 nn_output = self.layer_list[1].neurons[0].compute_output_final()
                 epoch_accuracy += 1 - abs(target - nn_output)
                 if verbose:
