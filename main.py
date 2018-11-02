@@ -14,21 +14,24 @@ if __name__ == "__main__":
     train_csv = "dataset/monk1/monk1train.csv"
     test_csv = "dataset/monk1/monk1test.csv"
 
-    training_set = preprocess_dataset(train_csv)
-    test_set = preprocess_dataset(test_csv)
+    hot_train = "dataset/monk1/monk1train_onehot.csv"
+    hot_test = "dataset/monk1/monk1test_onehot.csv"
+
+    training_set = preprocess_dataset(hot_train)
+    test_set = preprocess_dataset(hot_test)
 
     ''' NB: every layer must have as many weights as the previous layer's neuron
         SET NETWORK STRUCTURE WITH APPROPRIATE WEIGHT AMOUNTS AND LAYERS
         NB: SET ON PRE-PROCESSING MONK DATASET in TRAINING FUNCTION '''
 
     nn = NeuralNet()            # initialize empty network = list containing layers
-    nn.initialize_layer(3, 6)   # set a first in layer (3 neuron, 6 weights each)
+    nn.initialize_layer(3, 17)   # set a first in layer (3 neuron, 6 weights each)
     nn.initialize_layer(1, 3)   # set out_layer (1 neuron, 3 weights each)
 
     # TRAINING SESSION
-    lr = 0.10
-    momentum = 0.50
-    nn.training(500, training_set, lr, momentum, verbose=False, monksDataset=False,
+    lr = 0.25
+    momentum = 0.30
+    nn.training(250, training_set, lr, momentum, verbose=False, monksDataset=False,
                 step_decay=False, lr_decay=False)
 
     # TEST SESSION
