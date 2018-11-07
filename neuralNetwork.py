@@ -6,6 +6,7 @@ from pprint import pprint
 class NeuralNet:
 
     def __init__(self):
+        self.error_list_test = list()
         self.layer_list = list()
         self.error_list = list()
         self.accuracy_list = list()
@@ -57,19 +58,21 @@ class NeuralNet:
     # Updating weights: w_new += delta_Wji
     # where delta_Wji = lr * delta_j * input_ji
     def update_weights(self, learning_rate, momentum, alpha):
-        previous_weight_update = 0.0
         for layer in self.layer_list:
             for neuron in layer.neurons:
                 for i in range(len(neuron.weights[0])):
                     # TODO: CHECK MOMENTUM
                     # TODO: IMPLEMENT WEIGHT DECAY TIKHONOV
-                    momentum_term = momentum * previous_weight_update
-                    weight_update = momentum_term + learning_rate * neuron.delta * neuron.inputs_list[0, i]
-                    previous_weight_update = weight_update
+                    previous_update_coeff = neuron.UPDATE_COEFF[0, i]
+                    momentum_term = momentum * previous_update_coeff
+                    update_coeff = learning_rate * neuron.delta * neuron.inputs_list[0, i]
+                    weight_update = momentum_term + update_coeff
+                    new_update_coeff = update_coeff
+                    neuron.UPDATE_COEFF[0, i] = new_update_coeff
                     new_weight = neuron.weights[0, i] + weight_update - (2 * alpha * neuron.weights[0, i])
                     neuron.weights[0, i] = new_weight
 
-    def training(self, n_epochs, tr_set, learning_rate=0.01, momentum=0.00, alpha=0.00,
+    def training(self, n_epochs, tr_set, val_test, learning_rate=0.01, momentum=0.00, alpha=0.00,
                  step_decay=False, lr_decay=False, verbose=False):
         current_learning_rate = learning_rate
         for j in range(n_epochs):
@@ -102,11 +105,29 @@ class NeuralNet:
             # Compute normalization of squared error --> ( epoch_error/len(tr(set)))
             self.error_list.append((j, epoch_error/len(tr_set)))
             self.accuracy_list.append((j, epoch_accuracy/len(tr_set)))
+            self.test_eval(val_test, j)
+
         if verbose:
             print(f"Final NN: Weights:")
             for layer in self.layer_list:
                 for neuron in layer.neurons:
                     pprint(neuron.weights)
+
+    def test_eval(self, test_set, iteration):
+        print("\nTEST RESULTS___________________________________________")
+        correct_predictions = 0
+        epoch_error = 0
+        for i in range(len(test_set)):
+            test_in = test_set[i][1:]
+            target = test_set[i][0]
+            self.feedforward(test_in)
+            err_out = self.compute_delta_output_layer(target)
+            epoch_error += err_out
+            nn_output = self.layer_list[1].neurons[0].compute_output_final()
+            correct_predictions += 1 - abs(target - nn_output)
+        print(f"\nAccuracy: {correct_predictions/len(test_set)}\n"
+              f"Total Predictions: {len(test_set)}")
+        self.error_list_test.append((iteration, epoch_error/len(test_set)))
 
     def test(self, test_set):
         print("\nTEST RESULTS___________________________________________")
@@ -119,5 +140,3 @@ class NeuralNet:
             correct_predictions += 1 - abs(target - nn_output)
         print(f"\nAccuracy: {correct_predictions/len(test_set)}\n"
               f"Total Predictions: {len(test_set)}")
-
-

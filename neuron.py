@@ -11,6 +11,7 @@ class Neuron:
         self.network_in = 0.00
         self.output = 0.00
         self.delta = 0.00
+        self.UPDATE_COEFF = np.zeros((1, n_weights))
 
     def compute_network_in(self, row_inputs):
         for i in range(len(row_inputs)):
