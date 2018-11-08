@@ -42,7 +42,11 @@ def write_one_hot(data, path_new):
         writer = csv.writer(csvfile)
         writer.writerows(data)
 
-# from_text_to_csv("dataset/monk2test.txt", "dataset/monk2test.csv")
-# convert_to_one_hot("dataset/monk1/monk1test.csv", "dataset/monk1/monk1test_onehot.csv")
 
-# test fixing filesystem_mismatch
+def get_dataset(name_csv):
+    dataset_np = np.genfromtxt(name_csv, delimiter=",")
+    return dataset_np
+
+
+# from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
+# convert_to_one_hot("dataset/monk3/monk3test.csv", "dataset/monk3/monk3test_onehot.csv")
