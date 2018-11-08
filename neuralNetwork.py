@@ -23,7 +23,7 @@ class NeuralNet:
                 layer.compute_squash_layer_sigmoid()
                 return
             # TODO: FIND OUY WHY I HAVE TO ADD [0]
-            next_input = layer.compute_squash_layer_sigmoid()[0]
+            next_input = layer.compute_squash_layer_sigmoid()
             actual_input = next_input
 
     def compute_output(self, nn_input):
@@ -59,18 +59,18 @@ class NeuralNet:
     def update_weights(self, learning_rate, momentum, alpha):
         for layer in self.layer_list:
             for neuron in layer.neurons:
-                for i in range(len(neuron.weights[0])):
+                for i in range(len(neuron.weights)):
                     # TODO: CHECK MOMENTUM
                     # TODO: IMPLEMENT WEIGHT DECAY TIKHONOV
                     # TODO: optimize this by vectorizing the update process
-                    previous_update_coeff = neuron.UPDATE_COEFF[0, i]
+                    previous_update_coeff = neuron.update_coeff[i]
                     momentum_term = momentum * previous_update_coeff
-                    update_coeff = learning_rate * neuron.delta * neuron.inputs_list[0, i]
+                    update_coeff = learning_rate * neuron.delta * neuron.inputs_list[i]
                     weight_update = momentum_term + update_coeff
                     new_update_coeff = update_coeff
-                    neuron.UPDATE_COEFF[0, i] = new_update_coeff
-                    new_weight = neuron.weights[0, i] + weight_update - (2 * alpha * neuron.weights[0, i])
-                    neuron.weights[0, i] = new_weight
+                    neuron.update_coeff[i] = new_update_coeff
+                    new_weight = neuron.weights[i] + weight_update - (2 * alpha * neuron.weights[i])
+                    neuron.weights[i] = new_weight
 
     def training(self, n_epochs, tr_set, val_test, learning_rate=0.01, momentum=0.00, alpha=0.00,
                  step_decay=False, lr_decay=False, verbose=False):
@@ -99,7 +99,7 @@ class NeuralNet:
                 epoch_accuracy += 1 - abs(target - nn_output)
                 if verbose:
                     print(f"Training_sample {i+1} of {len(tr_set)}")
-            print(f"Total Error for Epoch: "
+            print(f"Total Error for Epoch on Training Set: "
                   f"{round(epoch_error/len(tr_set), 5)}")
             # Compute normalization of error: (epoch_error/len(tr(set)))
             self.error_list.append((j, epoch_error/len(tr_set)))
@@ -123,7 +123,8 @@ class NeuralNet:
             nn_output = self.layer_list[1].neurons[0].compute_output_final()
             correct_predictions += 1 - abs(target - nn_output)
         print(f"Accuracy on Validation: "
-              f"{round(correct_predictions/len(test_set), 5)}\n")
+              f"{round(correct_predictions/len(test_set), 5)}\n"
+              f"Total Error for Epoch on Validation Set{round(epoch_error/len(test_set), 5)}")
         self.error_list_test.append((iteration, epoch_error/len(test_set)))
 
     def test(self, test_set):

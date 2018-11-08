@@ -29,11 +29,11 @@ def main():
     nn.initialize_layer(1, 3)
 
     # TRAINING SESSION
-    lr = 0.35
-    momentum = 0.00
+    lr = 0.03
+    momentum = 0.0
     # TODO: Check alpha not working as intended
     alpha = 0.00
-    nn.training(50, training_set, test_set, lr, momentum, alpha, verbose=False,
+    nn.training(250, training_set, test_set, lr, momentum, alpha, verbose=False,
                 step_decay=True, lr_decay=False)
 
     # TEST SESSION

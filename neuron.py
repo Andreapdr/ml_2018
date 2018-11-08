@@ -5,18 +5,18 @@ import math
 class Neuron:
 
     def __init__(self, n_weights):
-        self.weights = np.random.uniform(low=-0.70, high=0.70, size=(1, n_weights))
+        self.weights = np.random.uniform(low=-0.70, high=0.70, size=n_weights)
         self.bias = 1.00
-        self.inputs_list = np.ones((1, n_weights))
+        self.inputs_list = np.ones(n_weights)
         self.network_in = 0.00
         self.output = 0.00
         self.delta = 0.00
-        self.UPDATE_COEFF = np.zeros((1, n_weights))
+        self.update_coeff = np.zeros(n_weights)
 
     def compute_network_in(self, row_inputs):
         for i in range(len(row_inputs)):
             input_x = row_inputs[i]
-            self.inputs_list[0, i] = input_x
+            self.inputs_list[i] = input_x
         self.network_in = np.dot(row_inputs, self.weights.T)
         self.network_in = self.network_in + self.bias
         return self.network_in
@@ -49,7 +49,7 @@ class Neuron:
         derivative_activation_function = self.output * (1 - self.output)
         hidden_error = 0.00
         for neuron in next_layer.neurons:
-            hidden_error += neuron.delta * neuron.weights[0, index_of_neuron_prev_layer]
+            hidden_error += neuron.delta * neuron.weights[index_of_neuron_prev_layer]
         delta_hidden = hidden_error * derivative_activation_function
         self.delta = delta_hidden
         return delta_hidden
