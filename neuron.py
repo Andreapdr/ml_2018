@@ -21,8 +21,13 @@ class Neuron:
         self.network_in = self.network_in + self.bias
         return self.network_in
 
-    def compute_output(self):
+    def compute_output_sigmoid(self):
         self.output = sigmoid_function(self.network_in)
+        return self.output
+
+    # self.network in should be only positive values
+    def compute_output_crossentropy(self):
+        self.output = cross_entropy_function(self.network_in)
         return self.output
 
     def compute_output_final(self):
@@ -36,6 +41,7 @@ class Neuron:
     def compute_delta_output(self, target):
         derivative_activation_function = self.output * (1 - self.output)
         error = target - self.output
+        # (target - self.output) is the derivative of the L2 loss function
         self.delta = (target - self.output) * derivative_activation_function
         return error
 
@@ -51,3 +57,7 @@ class Neuron:
 
 def sigmoid_function(x):
     return 1 / (1 + math.exp(-x))
+
+
+def cross_entropy_function(x):
+    return - np.log(x)

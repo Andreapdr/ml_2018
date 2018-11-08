@@ -12,10 +12,10 @@ def main():
     train_csv_one_hot = "dataset/monk1/monk1train_onehot.csv"
     test_csv_one_hot = "dataset/monk1/monk1test_onehot.csv"
 
-    # training_set = get_dataset(train_csv_one_hot)
-    # test_set = get_dataset(test_csv_one_hot)
-    training_set = get_dataset(train_csv)
-    test_set = get_dataset(test_csv)
+    training_set = get_dataset(train_csv_one_hot)
+    test_set = get_dataset(test_csv_one_hot)
+    # training_set = get_dataset(train_csv)
+    # test_set = get_dataset(test_csv)
 
     ''' NB: every layer must have as many weights as the previous layer's neuron
         SET NETWORK STRUCTURE WITH APPROPRIATE WEIGHT AMOUNTS AND LAYERS.    
@@ -25,19 +25,18 @@ def main():
 
     # INITIALIZATION
     nn = NeuralNet()
-    nn.initialize_layer(3, 6)
+    nn.initialize_layer(3, 17)
     nn.initialize_layer(1, 3)
 
     # TRAINING SESSION
     lr = 0.35
-    momentum = 0.0
+    momentum = 0.00
     # TODO: Check alpha not working as intended
     alpha = 0.00
-    nn.training(300, training_set, test_set, lr, momentum, alpha, verbose=False,
-                step_decay=False, lr_decay=True)
+    nn.training(50, training_set, test_set, lr, momentum, alpha, verbose=False,
+                step_decay=True, lr_decay=False)
 
     # TEST SESSION
-    print("LAST_TEST______________")
     nn.test(test_set)
 
     # TRAINING SESSION PLOTTING

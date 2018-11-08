@@ -14,17 +14,16 @@ class NeuralNet:
     def initialize_layer(self, n_neuron, n_neuron_weights):
         self.layer_list.append(Layer(n_neuron, n_neuron_weights))
 
-    # TODO: find out why sometimes gets an array [[1,2,3]] and sometimes directly [1,2,3]
     def feedforward(self, row_input):
         actual_input = row_input
         for i in range(len(self.layer_list)):
             layer = self.layer_list[i]
             layer.compute_input_layer(actual_input)
             if i == len(self.layer_list)-1:
-                layer.compute_squash_layer()
+                layer.compute_squash_layer_sigmoid()
                 return
             # TODO: FIND OUY WHY I HAVE TO ADD [0]
-            next_input = layer.compute_squash_layer()[0]
+            next_input = layer.compute_squash_layer_sigmoid()[0]
             actual_input = next_input
 
     def compute_output(self, nn_input):
@@ -43,8 +42,8 @@ class NeuralNet:
             error_output_layer += 0.5 * (err ** 2)
         return error_output_layer
 
-    # iterate the layer_list in reverse order starting
-    # j is equal to the index of neuron-> retrieve its weights
+    ''' iterate the layer_list in reverse order starting
+        j is equal to the index of neuron-> retrieve its weights '''
     def compute_delta_hidden_layer(self):
         error_input_layer = 0.00
         for i in range(len(self.layer_list)-1, 0, -1):
@@ -55,14 +54,15 @@ class NeuralNet:
                 error_input_layer += err
         return error_input_layer
 
-    # Updating weights: w_new += delta_Wji
-    # where delta_Wji = lr * delta_j * input_ji
+    ''' Updating weights: w_new += delta_Wji
+        where delta_Wji = lr * delta_j * input_ji '''
     def update_weights(self, learning_rate, momentum, alpha):
         for layer in self.layer_list:
             for neuron in layer.neurons:
                 for i in range(len(neuron.weights[0])):
                     # TODO: CHECK MOMENTUM
                     # TODO: IMPLEMENT WEIGHT DECAY TIKHONOV
+                    # TODO: optimize this by vectorizing the update process
                     previous_update_coeff = neuron.UPDATE_COEFF[0, i]
                     momentum_term = momentum * previous_update_coeff
                     update_coeff = learning_rate * neuron.delta * neuron.inputs_list[0, i]
@@ -76,7 +76,7 @@ class NeuralNet:
                  step_decay=False, lr_decay=False, verbose=False):
         current_learning_rate = learning_rate
         for j in range(n_epochs):
-            print("\nEPOCH {} ___________________________".format(j + 1))
+            print(f"\nEPOCH {j+1} ___________________________")
             epoch_error = 0.00
             epoch_accuracy = 0.00
             # use different order of patterns in different epochs
@@ -87,9 +87,7 @@ class NeuralNet:
                     current_learning_rate = current_learning_rate/10
             if lr_decay:
                 current_learning_rate -= 0.001
-            # For every sample in dataset:
             for i in range(len(tr_set)):
-                # First elem of set == target
                 tr_in = tr_set[i][1:]
                 target = tr_set[i][0]
                 self.feedforward(tr_in)
@@ -101,12 +99,12 @@ class NeuralNet:
                 epoch_accuracy += 1 - abs(target - nn_output)
                 if verbose:
                     print(f"Training_sample {i+1} of {len(tr_set)}")
-            print(f"Total Error for Epoch: {round(epoch_error/len(tr_set), 5)}")
-            # Compute normalization of squared error --> ( epoch_error/len(tr(set)))
+            print(f"Total Error for Epoch: "
+                  f"{round(epoch_error/len(tr_set), 5)}")
+            # Compute normalization of error: (epoch_error/len(tr(set)))
             self.error_list.append((j, epoch_error/len(tr_set)))
             self.accuracy_list.append((j, epoch_accuracy/len(tr_set)))
             self.test_eval(val_test, j)
-
         if verbose:
             print(f"Final NN: Weights:")
             for layer in self.layer_list:
@@ -114,7 +112,6 @@ class NeuralNet:
                     pprint(neuron.weights)
 
     def test_eval(self, test_set, iteration):
-        print("\nTEST RESULTS___________________________________________")
         correct_predictions = 0
         epoch_error = 0
         for i in range(len(test_set)):
@@ -125,12 +122,12 @@ class NeuralNet:
             epoch_error += err_out
             nn_output = self.layer_list[1].neurons[0].compute_output_final()
             correct_predictions += 1 - abs(target - nn_output)
-        print(f"\nAccuracy: {correct_predictions/len(test_set)}\n"
-              f"Total Predictions: {len(test_set)}")
+        print(f"Accuracy on Validation: "
+              f"{round(correct_predictions/len(test_set), 5)}\n")
         self.error_list_test.append((iteration, epoch_error/len(test_set)))
 
     def test(self, test_set):
-        print("\nTEST RESULTS___________________________________________")
+        print("TEST RESULTS\n____________________________________")
         correct_predictions = 0
         for i in range(len(test_set)):
             test_in = test_set[i][1:]
@@ -138,5 +135,5 @@ class NeuralNet:
             self.feedforward(test_in)
             nn_output = self.layer_list[1].neurons[0].compute_output_final()
             correct_predictions += 1 - abs(target - nn_output)
-        print(f"\nAccuracy: {correct_predictions/len(test_set)}\n"
+        print(f"Accuracy: {correct_predictions/len(test_set)}\n"
               f"Total Predictions: {len(test_set)}")
