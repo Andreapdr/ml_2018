@@ -61,3 +61,5 @@ def sigmoid_function(x):
 
 def cross_entropy_function(x):
     return - np.log(x)
+
+# test merging

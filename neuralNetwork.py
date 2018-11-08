@@ -122,9 +122,9 @@ class NeuralNet:
             epoch_error += err_out
             nn_output = self.layer_list[1].neurons[0].compute_output_final()
             correct_predictions += 1 - abs(target - nn_output)
-        print(f"Accuracy on Validation: "
-              f"{round(correct_predictions/len(test_set), 5)}\n"
-              f"Total Error for Epoch on Validation Set{round(epoch_error/len(test_set), 5)}")
+        print(f"Total Error for Epoch on Validata Set: {round(epoch_error/len(test_set), 5)}\n"
+              f"Accuracy on Validation: "
+              f"{round(correct_predictions/len(test_set), 5)}")
         self.error_list_test.append((iteration, epoch_error/len(test_set)))
 
     def test(self, test_set):
@@ -138,3 +138,5 @@ class NeuralNet:
             correct_predictions += 1 - abs(target - nn_output)
         print(f"Accuracy: {correct_predictions/len(test_set)}\n"
               f"Total Predictions: {len(test_set)}")
+
+# test merging

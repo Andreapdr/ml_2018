@@ -50,3 +50,5 @@ def get_dataset(name_csv):
 
 # from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
 # convert_to_one_hot("dataset/monk3/monk3test.csv", "dataset/monk3/monk3test_onehot.csv")
+
+# test merging
