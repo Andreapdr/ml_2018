@@ -41,7 +41,6 @@ class Neuron:
     def compute_delta_output(self, target):
         derivative_activation_function = self.output * (1 - self.output)
         error = target - self.output
-        # (target - self.output) is the derivative of the L2 loss function
         self.delta = (target - self.output) * derivative_activation_function
         return error
 
@@ -61,5 +60,3 @@ def sigmoid_function(x):
 
 def cross_entropy_function(x):
     return - np.log(x)
-
-# test merging

@@ -138,5 +138,3 @@ class NeuralNet:
             correct_predictions += 1 - abs(target - nn_output)
         print(f"Accuracy: {correct_predictions/len(test_set)}\n"
               f"Total Predictions: {len(test_set)}")
-
-# test merging
