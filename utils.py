@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def from_text_to_csv(text_path, csv_path):
@@ -47,6 +48,41 @@ def get_dataset(name_csv):
     dataset_np = np.genfromtxt(name_csv, delimiter=",")
     return dataset_np
 
+
+def horror_plot(network, lr, momentum):
+    plt.title(f"Error Function MSE \nlr: {lr}, momentum: {momentum}")
+    cord_x = list()
+    cord_y = list()
+    cord_x_test = list()
+    cord_y_test = list()
+    for elem in network.error_list:
+        cord_x.append(elem[0])
+        cord_y.append(elem[1])
+    for elem in network.error_list_test:
+        cord_x_test.append(elem[0])
+        cord_y_test.append(elem[1])
+    plt.plot(cord_x, cord_y, label="Error Rate Training")
+    plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation", linestyle="dashed")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    plt.title(f"Accuracy")
+    acc_cord_x = list()
+    acc_cord_y = list()
+    acc_cord_x_test = list()
+    acc_cord_y_test = list()
+    for elem in network.accuracy_list:
+        acc_cord_x.append(elem[0])
+        acc_cord_y.append(elem[1])
+    for elem in network.accuracy_list_test:
+        acc_cord_x_test.append(elem[0])
+        acc_cord_y_test.append(elem[1])
+    plt.plot(acc_cord_x, acc_cord_y, label="Accuracy Training")
+    plt.plot(acc_cord_x_test, acc_cord_y_test, label="Accuracy Validation", linestyle="dashed")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 # from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
 # convert_to_one_hot("dataset/monk3/monk3test.csv", "dataset/monk3/monk3test_onehot.csv")

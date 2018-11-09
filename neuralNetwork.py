@@ -10,6 +10,7 @@ class NeuralNet:
         self.layer_list = list()
         self.error_list = list()
         self.accuracy_list = list()
+        self.accuracy_list_test = list()
 
     def initialize_layer(self, n_neuron, n_neuron_weights):
         self.layer_list.append(Layer(n_neuron, n_neuron_weights))
@@ -78,7 +79,7 @@ class NeuralNet:
         for j in range(n_epochs):
             print(f"\nEPOCH {j+1} ___________________________")
             epoch_error = 0.00
-            epoch_accuracy = 0.00
+            correct_predictions = 0.00
             # use different order of patterns in different epochs
             np.random.shuffle(tr_set)
             # STEP DECAY: learning rate is cut by 10 every 10 epochs
@@ -96,14 +97,14 @@ class NeuralNet:
                 epoch_error += err_out
                 self.update_weights(learning_rate, momentum, alpha)
                 nn_output = self.layer_list[1].neurons[0].compute_output_final()
-                epoch_accuracy += 1 - abs(target - nn_output)
+                correct_predictions += 1 - abs(target - nn_output)
                 if verbose:
                     print(f"Training_sample {i+1} of {len(tr_set)}")
-            print(f"Total Error for Epoch on Training Set: "
-                  f"{round(epoch_error/len(tr_set), 5)}")
+            print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(tr_set), 5)}\n"
+                  f"Accuracy on Training: {round(correct_predictions/len(tr_set), 5)}")
             # Compute normalization of error: (epoch_error/len(tr(set)))
             self.error_list.append((j, epoch_error/len(tr_set)))
-            self.accuracy_list.append((j, epoch_accuracy/len(tr_set)))
+            self.accuracy_list.append((j, correct_predictions/len(tr_set)))
             self.test_eval(val_test, j)
         if verbose:
             print(f"Final NN: Weights:")
@@ -126,6 +127,7 @@ class NeuralNet:
               f"Accuracy on Validation: "
               f"{round(correct_predictions/len(test_set), 5)}")
         self.error_list_test.append((iteration, epoch_error/len(test_set)))
+        self.accuracy_list_test.append((iteration, correct_predictions/len(test_set)))
 
     def test(self, test_set):
         print("TEST RESULTS\n____________________________________")

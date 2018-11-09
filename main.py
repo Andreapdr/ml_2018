@@ -1,6 +1,6 @@
 from neuralNetwork import NeuralNet
+from utils import get_dataset, horror_plot
 import matplotlib.pyplot as plt
-from utils import get_dataset
 
 
 def main():
@@ -29,34 +29,14 @@ def main():
     nn.initialize_layer(1, 3)
 
     # TRAINING SESSION
-    lr = 0.03
+    lr = 0.2
     momentum = 0.0
     # TODO: Check alpha not working as intended
     alpha = 0.00
-    nn.training(250, training_set, test_set, lr, momentum, alpha, verbose=False,
+    nn.training(200, training_set, test_set, lr, momentum, alpha, verbose=False,
                 step_decay=True, lr_decay=False)
 
-    # TEST SESSION
-    nn.test(test_set)
-
-    # TRAINING SESSION PLOTTING
-    # TODO: TO BETTER IMPLEMENT
-    plt.title(f"Error Function MSE \nlr: {lr}, momentum: {momentum}")
-    cord_x = list()
-    cord_y = list()
-    cord_x_test = list()
-    cord_y_test = list()
-    for elem in nn.error_list:
-        cord_x.append(elem[0])
-        cord_y.append(elem[1])
-    for elem in nn.error_list_test:
-        cord_x_test.append(elem[0])
-        cord_y_test.append(elem[1])
-    plt.plot(cord_x, cord_y, label="Error Rate Training")
-    plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    horror_plot(nn, lr, momentum)
 
 
 if __name__ == "__main__":
