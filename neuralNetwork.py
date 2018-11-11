@@ -20,10 +20,6 @@ class NeuralNet:
         for i in range(len(self.layer_list)):
             layer = self.layer_list[i]
             layer.compute_input_layer(actual_input)
-            if i == len(self.layer_list)-1:
-                layer.compute_squash_layer_sigmoid()
-                return
-            # TODO: FIND OUY WHY I HAVE TO ADD [0]
             next_input = layer.compute_squash_layer_sigmoid()
             actual_input = next_input
 
@@ -61,7 +57,6 @@ class NeuralNet:
         for layer in self.layer_list:
             for neuron in layer.neurons:
                 for i in range(len(neuron.weights)):
-                    # TODO: CHECK MOMENTUM
                     # TODO: IMPLEMENT WEIGHT DECAY TIKHONOV
                     # TODO: optimize this by vectorizing the update process
                     previous_update_coeff = neuron.update_coeff[i]
@@ -98,10 +93,8 @@ class NeuralNet:
                 self.update_weights(learning_rate, momentum, alpha)
                 nn_output = self.layer_list[1].neurons[0].compute_output_final()
                 correct_predictions += 1 - abs(target - nn_output)
-                if verbose:
-                    print(f"Training_sample {i+1} of {len(tr_set)}")
             print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(tr_set), 5)}\n"
-                  f"Accuracy on Training: {round(correct_predictions/len(tr_set), 5)}")
+                  f"Accuracy on Training:   {round(correct_predictions/len(tr_set), 5)}")
             # Compute normalization of error: (epoch_error/len(tr(set)))
             self.error_list.append((j, epoch_error/len(tr_set)))
             self.accuracy_list.append((j, correct_predictions/len(tr_set)))

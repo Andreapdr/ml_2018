@@ -16,7 +16,7 @@ class Layer:
 
     def compute_squash_layer_sigmoid(self):
         for i in range(len(self.neurons)):
-            r = self.neurons[i].compute_output_sigmoid()
+            r = self.neurons[i].compute_network_out()
             self.out_vector[i] = r
         return self.out_vector
 

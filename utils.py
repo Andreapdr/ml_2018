@@ -50,6 +50,7 @@ def get_dataset(name_csv):
 
 
 def horror_plot(network, lr, momentum):
+    # plt.subplot(2, 1, 1)
     plt.title(f"Error Function MSE \nlr: {lr}, momentum: {momentum}")
     cord_x = list()
     cord_y = list()
@@ -67,6 +68,7 @@ def horror_plot(network, lr, momentum):
     plt.grid(True)
     plt.show()
 
+    # plt.subplot(2, 1, 2)
     plt.title(f"Accuracy")
     acc_cord_x = list()
     acc_cord_y = list()
@@ -82,7 +84,9 @@ def horror_plot(network, lr, momentum):
     plt.plot(acc_cord_x_test, acc_cord_y_test, label="Accuracy Validation", linestyle="dashed")
     plt.legend()
     plt.grid(True)
+    plt.tight_layout()
     plt.show()
+
 
 # from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
 # convert_to_one_hot("dataset/monk3/monk3test.csv", "dataset/monk3/monk3test_onehot.csv")

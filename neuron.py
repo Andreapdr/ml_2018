@@ -21,7 +21,7 @@ class Neuron:
         self.network_in = self.network_in + self.bias
         return self.network_in
 
-    def compute_output_sigmoid(self):
+    def compute_network_out(self):
         self.output = sigmoid_function(self.network_in)
         return self.output
 
@@ -30,6 +30,24 @@ class Neuron:
         self.output = cross_entropy_function(self.network_in)
         return self.output
 
+    # for sigmoid activation function
+    def compute_delta_output(self, target):
+        # derivative_activation_sigmoid = self.output * (1 - self.output)
+        derivative_activation_sigmoid = derivative_sigmoid(self.output)
+        error = target - self.output
+        self.delta = (target - self.output) * derivative_activation_sigmoid
+        return error
+
+    def compute_delta_hidden(self, next_layer, index_of_neuron_prev_layer):
+        # derivative_activation_sigmoid = self.output * (1 - self.output)
+        derivative_activation_sigmoid = derivative_sigmoid(self.output)
+        hidden_error = 0.00
+        for neuron in next_layer.neurons:
+            hidden_error += neuron.delta * neuron.weights[index_of_neuron_prev_layer]
+        delta_hidden = hidden_error * derivative_activation_sigmoid
+        self.delta = delta_hidden
+        return delta_hidden
+
     def compute_output_final(self):
         out = self.output
         if out > 0.5:
@@ -37,26 +55,18 @@ class Neuron:
         else:
             return 0
 
-    # for sigmoid activation function
-    def compute_delta_output(self, target):
-        derivative_activation_function = self.output * (1 - self.output)
-        error = target - self.output
-        self.delta = (target - self.output) * derivative_activation_function
-        return error
-
-    def compute_delta_hidden(self, next_layer, index_of_neuron_prev_layer):
-        derivative_activation_function = self.output * (1 - self.output)
-        hidden_error = 0.00
-        for neuron in next_layer.neurons:
-            hidden_error += neuron.delta * neuron.weights[index_of_neuron_prev_layer]
-        delta_hidden = hidden_error * derivative_activation_function
-        self.delta = delta_hidden
-        return delta_hidden
-
 
 def sigmoid_function(x):
     return 1 / (1 + math.exp(-x))
 
 
+def derivative_sigmoid(output):
+    return output * (1 - output)
+
+
 def cross_entropy_function(x):
     return - np.log(x)
+
+
+def derivative_cross_entropy(output):
+    pass
