@@ -91,7 +91,7 @@ class NeuralNet:
                 self.compute_delta_hidden_layer()
                 epoch_error += err_out
                 self.update_weights(learning_rate, momentum, alpha)
-                nn_output = self.layer_list[1].neurons[0].compute_output_final()
+                nn_output = self.layer_list[len(self.layer_list)-1].neurons[0].compute_output_final()
                 correct_predictions += 1 - abs(target - nn_output)
             print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(tr_set), 5)}\n"
                   f"Accuracy on Training:   {round(correct_predictions/len(tr_set), 5)}")
@@ -114,7 +114,7 @@ class NeuralNet:
             self.feedforward(test_in)
             err_out = self.compute_delta_output_layer(target)
             epoch_error += err_out
-            nn_output = self.layer_list[1].neurons[0].compute_output_final()
+            nn_output = self.layer_list[len(self.layer_list)-1].neurons[0].compute_output_final()
             correct_predictions += 1 - abs(target - nn_output)
         print(f"Total Error for Epoch on Validata Set: {round(epoch_error/len(test_set), 5)}\n"
               f"Accuracy on Validation: "

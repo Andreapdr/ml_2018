@@ -24,12 +24,12 @@ def main():
 
     # INITIALIZATION
     nn = NeuralNet()
-    nn.initialize_layer(3, 17)
-    nn.initialize_layer(1, 3)
+    nn.initialize_layer(6, 17)
+    nn.initialize_layer(1, 6)
 
     # TRAINING SESSION
-    lr = 0.30
-    momentum = 0.00
+    lr = 0.4
+    momentum = 0.01
     # TODO: Check alpha not working as intended
     alpha = 0.00
     nn.training(150, training_set, test_set, lr, momentum, alpha, verbose=False,
