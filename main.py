@@ -8,8 +8,8 @@ def main():
     test_csv = "dataset/monk1/monk1test.csv"
 
     # One-Hot Encoded Monk Dataset (len = 16 + 1, target at index 0)
-    train_csv_one_hot = "dataset/monk1/monk1train_onehot.csv"
-    test_csv_one_hot = "dataset/monk1/monk1test_onehot.csv"
+    train_csv_one_hot = "dataset/monk3/monk3train_onehot.csv"
+    test_csv_one_hot = "dataset/monk3/monk3test_onehot.csv"
 
     training_set = get_dataset(train_csv_one_hot)
     test_set = get_dataset(test_csv_one_hot)
@@ -28,8 +28,8 @@ def main():
     nn.initialize_layer(1, 6)
 
     # TRAINING SESSION
-    lr = 0.4
-    momentum = 0.01
+    lr = 0.02
+    momentum = 0.1
     # TODO: Check alpha not working as intended
     alpha = 0.00
     nn.training(150, training_set, test_set, lr, momentum, alpha, verbose=False,

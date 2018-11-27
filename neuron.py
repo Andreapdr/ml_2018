@@ -22,7 +22,8 @@ class Neuron:
         return self.network_in
 
     def compute_network_out(self):
-        self.output = sigmoid_function(self.network_in)
+        # self.output = sigmoid_function(self.network_in)
+        self.output = tanh_function(self.network_in)
         return self.output
 
     # self.network in should be only positive values
@@ -32,19 +33,21 @@ class Neuron:
 
     # for sigmoid activation function
     def compute_delta_output(self, target):
-        # derivative_activation_sigmoid = self.output * (1 - self.output)
-        derivative_activation_sigmoid = derivative_sigmoid(self.output)
+        derivative_activation_tanh = tanh_derivative(self.output)
+        # derivative_activation_sigmoid = derivative_sigmoid(self.output)
         error = target - self.output
-        self.delta = (target - self.output) * derivative_activation_sigmoid
+        # self.delta = (target - self.output) * derivative_activation_sigmoid
+        self.delta = (target - self.output) * derivative_activation_tanh
         return error
 
     def compute_delta_hidden(self, next_layer, index_of_neuron_prev_layer):
-        # derivative_activation_sigmoid = self.output * (1 - self.output)
-        derivative_activation_sigmoid = derivative_sigmoid(self.output)
+        derivative_activation_tan = tanh_derivative(self.output)
+        # derivative_activation_sigmoid = derivative_sigmoid(self.output)
         hidden_error = 0.00
         for neuron in next_layer.neurons:
             hidden_error += neuron.delta * neuron.weights[index_of_neuron_prev_layer]
-        delta_hidden = hidden_error * derivative_activation_sigmoid
+        # delta_hidden = hidden_error * derivative_activation_sigmoid
+        delta_hidden = hidden_error * derivative_activation_tan
         self.delta = delta_hidden
         return delta_hidden
 
@@ -70,3 +73,11 @@ def cross_entropy_function(x):
 
 def derivative_cross_entropy(output):
     pass
+
+
+def tanh_function(x):
+    return math.tanh(x)
+
+
+def tanh_derivative(output):
+    return 1 - output**2
