@@ -10,6 +10,8 @@ class NeuralNet:
         self.layer_list = list()
         self.error_list = list()
         self.validation_error_list = list()
+        self.accuracy_list = list()
+        self.validation_accuracy_list = list()
 
     def init_inputLayer(self, n_att):
         self.layer_list.append(InputLayer(n_att))
@@ -52,6 +54,7 @@ class NeuralNet:
     def train(self, training_set, validation_set, epoch, learning_rate, activation_function, derivative_activation):
         for epoch in range(epoch):
             time_start = time.clock()
+            # TODO: Shuffle causes strong staggering in error rate plot
             # np.random.shuffle(training_set)
             epoch_error = 0
             correct_pred = 0
@@ -72,6 +75,7 @@ class NeuralNet:
             print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(training_set), 5)}\n"
                   f"Accuracy on Training:   {round(correct_pred/len(training_set), 5)}")
             self.error_list.append((epoch+1, epoch_error/len(training_set)))
+            self.accuracy_list.append((epoch+1, correct_pred/len(training_set)))
             self.test(validation_set, epoch+1, activation_function)
             time_elapsed = round((time.clock() - time_start), 3)
             print(f"Time elapsed for epoch {epoch+1}: {time_elapsed}s")
@@ -79,6 +83,7 @@ class NeuralNet:
     def test(self, validation_set, relative_epoch, activation_function):
         total_error = 0
         correct_pred = 0
+        # TODO: Shuffle causes strong staggering in error rate plot
         # np.random.shuffle(validation_set)
         for i in range(len(validation_set)):
             validation_in = validation_set[i][1:]
@@ -92,6 +97,7 @@ class NeuralNet:
             if guess == target:
                 correct_pred += 1
         self.validation_error_list.append((relative_epoch, total_error/len(validation_set)))
+        self.validation_accuracy_list.append((relative_epoch, correct_pred/len(validation_set)))
         print(f"Total Error for Epoch on Validata Set: {round(total_error/len(validation_set), 5)}\n"
               f"Accuracy on Validation: "
               f"{round(correct_pred/len(validation_set), 5)}")
