@@ -20,8 +20,4 @@ class Layer:
             self.out_vector[i] = r
         return self.out_vector
 
-    def compute_squash_layer_crossentropy(self):
-        for i in range(len(self.neurons)):
-            r = self.neurons[i].compute_output_crossentropy()
-            self.out_vector[i] = r
-        return self.out_vector
+

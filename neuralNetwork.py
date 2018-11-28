@@ -1,6 +1,7 @@
 import numpy as np
 from layer import Layer
 from pprint import pprint
+import time
 
 
 class NeuralNet:
@@ -72,6 +73,7 @@ class NeuralNet:
                  step_decay=False, lr_decay=False, verbose=False):
         current_learning_rate = learning_rate
         for j in range(n_epochs):
+            time_start = time.clock()
             print(f"\nEPOCH {j+1} ___________________________")
             epoch_error = 0.00
             correct_predictions = 0.00
@@ -99,6 +101,8 @@ class NeuralNet:
             self.error_list.append((j, epoch_error/len(tr_set)))
             self.accuracy_list.append((j, correct_predictions/len(tr_set)))
             self.test_eval(val_test, j)
+            time_elapsed = round(((time.clock() - time_start)), 3)
+            print(f"Time elapsed for epoch {j+1}: {time_elapsed}s")
         if verbose:
             print(f"Final NN: Weights:")
             for layer in self.layer_list:
