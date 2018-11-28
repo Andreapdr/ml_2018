@@ -15,7 +15,7 @@ def main():
     nn.init_inputLayer(17)
     nn.init_layer(6, 17)
     # TODO: check for multilayer problems...
-    # nn.init_layer(6, 6)
+    nn.init_layer(6, 6)
     nn.init_layer(1, 6)
 
     # neurons = nn.get_number_neurons()
@@ -23,8 +23,10 @@ def main():
     # weights = nn.get_number_weights()
     # print(weights)
     lr = 0.25
-    epochs = 150
-    nn.train(training_set, test_set, epochs, lr, sigmoid_function, derivative_sigmoid)
+    epochs = 50
+    activation_function = sigmoid_function
+    derivative_activation = derivative_sigmoid
+    nn.train(training_set, test_set, epochs, lr, activation_function, derivative_activation)
     horror_plot(nn, lr, 0)
 
 
