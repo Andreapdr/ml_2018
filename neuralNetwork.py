@@ -1,6 +1,7 @@
 import numpy as np
 from layer import Layer
 from pprint import pprint
+import time
 
 
 class NeuralNet:
@@ -42,14 +43,14 @@ class NeuralNet:
     ''' iterate the layer_list in reverse order starting
         j is equal to the index of neuron-> retrieve its weights '''
     def compute_delta_hidden_layer(self):
-        #error_input_layer = 0.00
+        error_input_layer = 0.00
         for i in range(len(self.layer_list)-1, 0, -1):
             layer = self.layer_list[i-1]
             next_layer = self.layer_list[i]
             for j, neuron in enumerate(layer.neurons):
-                neuron.compute_delta_hidden(next_layer, j)
-         #       error_input_layer += err
-        #return error_input_layer
+                err = neuron.compute_delta_hidden(next_layer, j)
+                error_input_layer += err
+        return error_input_layer
 
     ''' Updating weights: w_new += delta_Wji
         where delta_Wji = lr * delta_j * input_ji '''
@@ -72,6 +73,7 @@ class NeuralNet:
                  step_decay=False, lr_decay=False, verbose=False):
         current_learning_rate = learning_rate
         for j in range(n_epochs):
+            time_start = time.clock()
             print(f"\nEPOCH {j+1} ___________________________")
             epoch_error = 0.00
             correct_predictions = 0.00
@@ -93,15 +95,14 @@ class NeuralNet:
                 self.update_weights(learning_rate, momentum, alpha)
                 nn_output = self.layer_list[len(self.layer_list)-1].neurons[0].compute_output_final()
                 correct_predictions += 1 - abs(target - nn_output)
-            tr_accuracy = round(correct_predictions/len(tr_set), 5)
             print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(tr_set), 5)}\n"
-                  f"Accuracy on Training:   {tr_accuracy}")
+                  f"Accuracy on Training:   {round(correct_predictions/len(tr_set), 5)}")
             # Compute normalization of error: (epoch_error/len(tr(set)))
             self.error_list.append((j, epoch_error/len(tr_set)))
             self.accuracy_list.append((j, correct_predictions/len(tr_set)))
-            #val_accuracy = self.test_eval(val_test, j)
-            #if val_accuracy == 1.0 and tr_accuracy == 1.0:
-            #    break;
+            self.test_eval(val_test, j)
+            time_elapsed = round(((time.clock() - time_start)), 3)
+            print(f"Time elapsed for epoch {j+1}: {time_elapsed}s")
         if verbose:
             print(f"Final NN: Weights:")
             for layer in self.layer_list:
@@ -119,13 +120,11 @@ class NeuralNet:
             epoch_error += err_out
             nn_output = self.layer_list[len(self.layer_list)-1].neurons[0].compute_output_final()
             correct_predictions += 1 - abs(target - nn_output)
-        accuracy = round(correct_predictions / len(test_set), 5)
         print(f"Total Error for Epoch on Validata Set: {round(epoch_error/len(test_set), 5)}\n"
               f"Accuracy on Validation: "
-              f"{accuracy}")
+              f"{round(correct_predictions/len(test_set), 5)}")
         self.error_list_test.append((iteration, epoch_error/len(test_set)))
         self.accuracy_list_test.append((iteration, correct_predictions/len(test_set)))
-        return accuracy
 
     def test(self, test_set):
         print("TEST RESULTS\n____________________________________")
