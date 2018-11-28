@@ -1,5 +1,5 @@
 import numpy as np
-from neuralNetwork import NeuralNet
+from neuralNetwork import NeuralNet, sigmoid_function, derivative_sigmoid, tanh_function, tanh_derivative
 import matplotlib.pyplot as plt
 
 
@@ -27,7 +27,7 @@ neurons = nn.get_number_neurons()
 print(neurons)
 weights = nn.get_number_weights()
 print(weights)
-nn.train(training_set, test_set, 150, 0.25)
+nn.train(training_set, test_set, 150, 0.25, tanh_function, tanh_derivative)
 
 
 cord_x = list()
@@ -45,41 +45,3 @@ plt.plot(cord_x_val, cord_y_val, label="Error Rate Validation")
 plt.legend()
 plt.grid(True)
 plt.show()
-
-# def horror_plot(network, lr, momentum):
-#     # plt.subplot(2, 1, 1)
-#     plt.title(f"Error Function MSE \nlr: {lr}, momentum: {momentum}")
-#     cord_x = list()
-#     cord_y = list()
-#     cord_x_test = list()
-#     cord_y_test = list()
-#     for elem in network.error_list:
-#         cord_x.append(elem[0])
-#         cord_y.append(elem[1])
-#     for elem in network.error_list_test:
-#         cord_x_test.append(elem[0])
-#         cord_y_test.append(elem[1])
-#     plt.plot(cord_x, cord_y, label="Error Rate Training")
-#     plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
-#     plt.legend()
-#     plt.grid(True)
-#     plt.show()
-#
-#     # plt.subplot(2, 1, 2)
-#     plt.title(f"Accuracy")
-#     acc_cord_x = list()
-#     acc_cord_y = list()
-#     acc_cord_x_test = list()
-#     acc_cord_y_test = list()
-#     for elem in network.accuracy_list:
-#         acc_cord_x.append(elem[0])
-#         acc_cord_y.append(elem[1])
-#     for elem in network.accuracy_list_test:
-#         acc_cord_x_test.append(elem[0])
-#         acc_cord_y_test.append(elem[1])
-#     plt.plot(acc_cord_x, acc_cord_y, label="Accuracy Training")
-#     plt.plot(acc_cord_x_test, acc_cord_y_test, label="Accuracy Validation")
-#     plt.legend()
-#     plt.grid(True)
-#     plt.tight_layout()
-#     plt.show()
