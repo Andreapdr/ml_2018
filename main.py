@@ -24,15 +24,16 @@ def main():
 
     # INITIALIZATION
     nn = NeuralNet()
-    nn.initialize_layer(6, 17)
-    nn.initialize_layer(1, 6)
+    nn.initialize_layer(10, 17)
+    nn.initialize_layer(10, 10)
+    nn.initialize_layer(1, 10)
 
     # TRAINING SESSION
-    lr = 0.4
-    momentum = 0.01
+    lr = 0.6
+    momentum = 0.4
     # TODO: Check alpha not working as intended
     alpha = 0.00
-    nn.training(150, training_set, test_set, lr, momentum, alpha, verbose=False,
+    nn.training(200, training_set, test_set, lr, momentum, alpha, verbose=False,
                 step_decay=True, lr_decay=False)
 
     # SCREENING

@@ -32,21 +32,19 @@ class Neuron:
 
     # for sigmoid activation function
     def compute_delta_output(self, target):
-        # derivative_activation_sigmoid = self.output * (1 - self.output)
         derivative_activation_sigmoid = derivative_sigmoid(self.output)
-        error = target - self.output
         self.delta = (target - self.output) * derivative_activation_sigmoid
+        # directly compute the error wrt output layer and return in (to plot it when training completed)
+        error = target - self.output
         return error
 
     def compute_delta_hidden(self, next_layer, index_of_neuron_prev_layer):
-        # derivative_activation_sigmoid = self.output * (1 - self.output)
         derivative_activation_sigmoid = derivative_sigmoid(self.output)
         hidden_error = 0.00
         for neuron in next_layer.neurons:
             hidden_error += neuron.delta * neuron.weights[index_of_neuron_prev_layer]
         delta_hidden = hidden_error * derivative_activation_sigmoid
         self.delta = delta_hidden
-        return delta_hidden
 
     def compute_output_final(self):
         out = self.output

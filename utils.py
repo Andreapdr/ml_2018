@@ -2,7 +2,6 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 def from_text_to_csv(text_path, csv_path):
     with open(text_path, 'r') as in_file:
         data = in_file.read()
@@ -13,7 +12,6 @@ def from_text_to_csv(text_path, csv_path):
         with open(csv_path, 'w') as out_file:
             writer = csv.writer(out_file)
             writer.writerows(out)
-
 
 def convert_to_one_hot(csv_path, path_new):
     data = np.genfromtxt(csv_path, delimiter=",")
@@ -51,7 +49,7 @@ def get_dataset(name_csv):
 
 def horror_plot(network, lr, momentum):
     # plt.subplot(2, 1, 1)
-    plt.title(f"Error Function MSE \nlr: {lr}, momentum: {momentum}")
+    plt.title(f"Error Function MSE \neta: {lr}, momentum: {momentum}")
     cord_x = list()
     cord_y = list()
     cord_x_test = list()
@@ -69,7 +67,7 @@ def horror_plot(network, lr, momentum):
     plt.show()
 
     # plt.subplot(2, 1, 2)
-    plt.title(f"Accuracy")
+    plt.title(f"Accuracy \neta: {lr}, momentum: {momentum}")
     acc_cord_x = list()
     acc_cord_y = list()
     acc_cord_x_test = list()
