@@ -23,13 +23,17 @@ class NeuralNet:
         self.layer_list[0].init_input(input_given)
         for i in range(1, len(self.layer_list)):
             self.layer_list[i].neurons = np.dot(self.layer_list[i-1].neurons, self.layer_list[i].weights.T)
-            self.layer_list[i].neurons = activation_function(self.layer_list[i].neurons)
+            # test = self.layer_list[i].neurons + self.layer_list[i].bias
+            self.layer_list[i].neurons = activation_function(self.layer_list[i].neurons + self.layer_list[i].bias)
 
     def compute_delta(self, target, derivative_activation):
         for i in range(len(self.layer_list)-1, 0, -1):
             # delta output_layer
             if i == len(self.layer_list)-1:
-                self.layer_list[i].delta = np.array([derivative_activation(self.layer_list[i].neurons) * (target - self.layer_list[i].neurons)])
+                # self.layer_list[i].delta = np.array([(derivative_activation(self.layer_list[i].neurons) *
+                #                                                  (target - self.layer_list[i].neurons))])
+                self.layer_list[i].delta = np.array([np.multiply(derivative_activation(self.layer_list[i].neurons),
+                                                                 (target - self.layer_list[i].neurons))])
             # delta hidden layers
             else:
                 di_sicuro = np.sum(self.layer_list[i+1].delta)
@@ -37,18 +41,22 @@ class NeuralNet:
                 trasposti = pesi_dopi.T
                 delta = trasposti * di_sicuro
                 self.layer_list[i].delta = delta.T * derivative_activation(self.layer_list[i].neurons)
+                # self.layer_list[i].delta = np.multiply(np.multiply(np.sum(self.layer_list[i+1].delta),
+                #                                                    self.layer_list[i+1].weights),
+                #                                        derivative_activation(self.layer_list[i].neurons))
 
     def update_weights(self, learning_rate):
         for i in range(1, len(self.layer_list)):
             # for every delta in this layer
             for j in range(len(self.layer_list[i].delta[0])):
                 # TESTING
-                w = self.layer_list[i].weights
-                lr = learning_rate
-                inputs = self.layer_list[i-1].neurons
-                deltaLayer = self.layer_list[i].delta[0][j]
-                test = np.dot(deltaLayer, inputs)
-                temp = self.layer_list[i].weights[j] + learning_rate * test
+                # w = self.layer_list[i].weights
+                # lr = learning_rate
+                # inputs = self.layer_list[i-1].neurons
+                # deltaLayer = self.layer_list[i].delta[0][j]
+                # # test = np.dot(deltaLayer, inputs)
+                temp = self.layer_list[i].weights[j] + np.multiply(learning_rate, np.dot(self.layer_list[i].delta[0][j],
+                                                                                         self.layer_list[i-1].neurons))
                 self.layer_list[i].weights[j] = temp
 
     def train(self, training_set, validation_set, epoch, learning_rate, activation_function, derivative_activation):
@@ -84,12 +92,12 @@ class NeuralNet:
         total_error = 0
         correct_pred = 0
         # TODO: Shuffle causes strong staggering in error rate plot
-        # np.random.shuffle(validation_set)
+        np.random.shuffle(validation_set)
         for i in range(len(validation_set)):
             validation_in = validation_set[i][1:]
             target = validation_set[i][0]
             self.feedforward(validation_in, activation_function)
-            error = 0.5 * ((target - sum(self.layer_list[-1].neurons))**2)
+            error = 0.5 * ((target - np.sum(self.layer_list[-1].neurons))**2)
             total_error += error
             guess = 0
             if self.layer_list[-1].neurons > 0.5:
@@ -113,6 +121,25 @@ class NeuralNet:
         for i in range(1, len(self.layer_list)):
             tot += self.layer_list[i].weights.shape[1] * len(self.layer_list[i].neurons)
         return tot
+
+    # TODO MOMENTUM to implement
+    def momentum(self):
+        pass
+
+    # TODO REGULARIZATION to implement
+    def regularization(self):
+        pass
+
+    # TODO more ERROR FUNCTION to implement other error functions
+    def error_function(self):
+        pass
+
+    # TODO to implement GridSearch and CrossValidation
+    def cross_validation(self):
+        pass
+
+    def grid_search(self):
+        pass
 
 
 def derivative_sigmoid(x):
