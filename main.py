@@ -1,5 +1,6 @@
 from neuralNetwork import NeuralNet, sigmoid_function, derivative_sigmoid, tanh_function, tanh_derivative
 from utils import get_dataset, horror_plot
+import multiprocessing as mp
 
 
 def main():

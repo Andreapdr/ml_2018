@@ -8,3 +8,5 @@ class Layer:
         self.weights = np.random.uniform(low=-0.50, high=0.50, size=[n_neurons, n_weights])
         self.delta = np.zeros(n_neurons)
         self.bias = 1.00
+
+# TODO Add bias to input neurons, use numpy concatenate...
