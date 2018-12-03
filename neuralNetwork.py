@@ -3,6 +3,8 @@ from layer import Layer
 from inputLayer import InputLayer
 import time
 
+# TODO: BIAS NOT IMPLEMENTED AS IT SHOULD BE
+
 
 class NeuralNet:
 
@@ -36,14 +38,11 @@ class NeuralNet:
                                                                  (target - self.layer_list[i].neurons))])
             # delta hidden layers
             else:
-                di_sicuro = np.sum(self.layer_list[i+1].delta)
+                di_sicuro = self.layer_list[i+1].delta
                 pesi_dopi = self.layer_list[i+1].weights
                 trasposti = pesi_dopi.T
                 delta = trasposti * di_sicuro
                 self.layer_list[i].delta = delta.T * derivative_activation(self.layer_list[i].neurons)
-                # self.layer_list[i].delta = np.multiply(np.multiply(np.sum(self.layer_list[i+1].delta),
-                #                                                    self.layer_list[i+1].weights),
-                #                                        derivative_activation(self.layer_list[i].neurons))
 
     def update_weights(self, learning_rate):
         for i in range(1, len(self.layer_list)):
@@ -70,6 +69,8 @@ class NeuralNet:
             for training_data in training_set:
                 target = training_data[0]
                 training_input = training_data[1:]
+                # target = training_data[len(training_data)-2:len(training_data)]
+                # training_input = training_data[1:-2]
                 self.feedforward(training_input, activation_function)
                 self.compute_delta(target, derivative_activation)
                 self.update_weights(learning_rate)
@@ -77,9 +78,9 @@ class NeuralNet:
                 error = 0.5 * ((target - np.sum(self.layer_list[-1].neurons))**2)
                 if self.layer_list[-1].neurons > 0.5:
                     guess = 1
-                if guess == target:
+                if (guess == target).all():
                     correct_pred += 1
-                epoch_error += error
+                epoch_error += np.sum(error)
             print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(training_set), 5)}\n"
                   f"Accuracy on Training:   {round(correct_pred/len(training_set), 5)}")
             self.error_list.append((epoch+1, epoch_error/len(training_set)))

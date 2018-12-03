@@ -8,6 +8,7 @@ def main():
     test_csv_one_hot = "dataset/monk1/monk1test_onehot.csv"
     train_csv = "dataset/monk1/monk1train.csv"
     test_csv = "dataset/monk1/monk1test.csv"
+    testing_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
 
     training_set = get_dataset(train_csv_one_hot)
     test_set = get_dataset(test_csv_one_hot)
