@@ -2,7 +2,6 @@ from neuralNetwork import NeuralNet, sigmoid_function, derivative_sigmoid, tanh_
 from utils import get_dataset, horror_plot
 import multiprocessing as mp
 
-
 def main():
     train_csv_one_hot = "dataset/monk1/monk1train_onehot.csv"
     test_csv_one_hot = "dataset/monk1/monk1test_onehot.csv"
@@ -16,17 +15,12 @@ def main():
     nn = NeuralNet()
     nn.init_inputLayer(17)
     nn.init_layer(4, 17)
-    # TODO: check for multilayer problems + WEIRD PROBLEM FOR LOW LEARNING RATE :(
-    # nn.init_layer(6, 6)
-    nn.init_layer(1, 4)
-
-    # neurons = nn.get_number_neurons()
-    # print(neurons)
-    # weights = nn.get_number_weights()
-    # print(weights)
+    # nn.init_layer(2, 4)
+    nn.init_layer(6, 4)
+    nn.init_layer(1, 6)
 
     lr = 0.30
-    epochs = 50
+    epochs = 125
     activation_function = sigmoid_function
     derivative_activation = derivative_sigmoid
     nn.train(training_set, test_set, epochs, lr, activation_function, derivative_activation)

@@ -25,36 +25,34 @@ class NeuralNet:
         self.layer_list[0].init_input(input_given)
         for i in range(1, len(self.layer_list)):
             self.layer_list[i].neurons = np.dot(self.layer_list[i-1].neurons, self.layer_list[i].weights.T)
-            # test = self.layer_list[i].neurons + self.layer_list[i].bias
-            self.layer_list[i].neurons = activation_function(self.layer_list[i].neurons + self.layer_list[i].bias)
+            self.layer_list[i].neurons = activation_function(self.layer_list[i].neurons)
 
     def compute_delta(self, target, derivative_activation):
         for i in range(len(self.layer_list)-1, 0, -1):
             # delta output_layer
             if i == len(self.layer_list)-1:
-                # self.layer_list[i].delta = np.array([(derivative_activation(self.layer_list[i].neurons) *
-                #                                                  (target - self.layer_list[i].neurons))])
-                self.layer_list[i].delta = np.array([np.multiply(derivative_activation(self.layer_list[i].neurons),
-                                                                 (target - self.layer_list[i].neurons))])
+                self.layer_list[i].delta = np.array(np.multiply(derivative_activation(self.layer_list[i].neurons),
+                                                                 (target - self.layer_list[i].neurons)))
             # delta hidden layers
             else:
-                di_sicuro = self.layer_list[i+1].delta
-                pesi_dopi = self.layer_list[i+1].weights
-                trasposti = pesi_dopi.T
-                delta = trasposti * di_sicuro
-                self.layer_list[i].delta = delta.T * derivative_activation(self.layer_list[i].neurons)
+                delta_upstream = self.layer_list[i+1].delta
+                weights_upstream = self.layer_list[i+1].weights
+                sum_delta_weights_upstream = np.dot(delta_upstream, weights_upstream)
+                temp = np.multiply(sum_delta_weights_upstream, derivative_activation(self.layer_list[i].neurons))
+                self.layer_list[i].delta = temp
 
     def update_weights(self, learning_rate):
         for i in range(1, len(self.layer_list)):
             # for every delta in this layer
-            for j in range(len(self.layer_list[i].delta[0])):
+            for j in range(len(self.layer_list[i].delta)):
                 # TESTING
                 # w = self.layer_list[i].weights
                 # lr = learning_rate
                 # inputs = self.layer_list[i-1].neurons
-                # deltaLayer = self.layer_list[i].delta[0][j]
-                # # test = np.dot(deltaLayer, inputs)
-                temp = self.layer_list[i].weights[j] + np.multiply(learning_rate, np.dot(self.layer_list[i].delta[0][j],
+                # deltaLayer = self.layer_list[i].delta[j]
+                # test = np.dot(deltaLayer, inputs)
+                # test2 = np.dot(test, learning_rate)
+                temp = self.layer_list[i].weights[j] + np.multiply(learning_rate, np.dot(self.layer_list[i].delta[j],
                                                                                          self.layer_list[i-1].neurons))
                 self.layer_list[i].weights[j] = temp
 
