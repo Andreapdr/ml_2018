@@ -24,42 +24,39 @@ class NeuralNet:
     def feedforward(self, input_given, activation_function):
         self.layer_list[0].init_input(input_given)
         for i in range(1, len(self.layer_list)):
-            self.layer_list[i].neurons = np.dot(self.layer_list[i-1].neurons, self.layer_list[i].weights.T)
-            self.layer_list[i].neurons = activation_function(self.layer_list[i].neurons)
+            inputs = self.layer_list[i-1].neurons
+            self.layer_list[i].neurons = np.dot(inputs, self.layer_list[i].weights.T)
+            self.layer_list[i].neurons = activation_function(self.layer_list[i].neurons + self.layer_list[i].bias)
 
     def compute_delta(self, target, derivative_activation):
         for i in range(len(self.layer_list)-1, 0, -1):
             # delta output_layer
             if i == len(self.layer_list)-1:
                 self.layer_list[i].delta = np.array(np.multiply(derivative_activation(self.layer_list[i].neurons),
-                                                                 (target - self.layer_list[i].neurons)))
+                                                                (target - self.layer_list[i].neurons)))
             # delta hidden layers
             else:
                 delta_upstream = self.layer_list[i+1].delta
                 weights_upstream = self.layer_list[i+1].weights
+                # weights_upstream_no_bias = np.array([self.layer_list[i+1].weights[0][1:]])
+                # TODO: REMOVE WEIGHT CONNECTING BIAS TO UNIT - should not be taken into account when computing delta
                 sum_delta_weights_upstream = np.dot(delta_upstream, weights_upstream)
                 temp = np.multiply(sum_delta_weights_upstream, derivative_activation(self.layer_list[i].neurons))
                 self.layer_list[i].delta = temp
 
     def update_weights(self, learning_rate):
         for i in range(1, len(self.layer_list)):
-            # for every delta in this layer
-            for j in range(len(self.layer_list[i].delta)):
-                # TESTING
-                # w = self.layer_list[i].weights
-                # lr = learning_rate
-                # inputs = self.layer_list[i-1].neurons
-                # deltaLayer = self.layer_list[i].delta[j]
-                # test = np.dot(deltaLayer, inputs)
-                # test2 = np.dot(test, learning_rate)
+            # UPDATE BIAS FOR ENTIRE LAYER
+            self.layer_list[i].bias += np.multiply(self.layer_list[i].delta, self.layer_list[i].bias)
+            for j in range((self.layer_list[i].weights.shape[0])):
                 temp = self.layer_list[i].weights[j] + np.multiply(learning_rate, np.dot(self.layer_list[i].delta[j],
-                                                                                         self.layer_list[i-1].neurons))
+                                                                                         self.layer_list[i - 1].neurons))
                 self.layer_list[i].weights[j] = temp
+
 
     def train(self, training_set, validation_set, epoch, learning_rate, activation_function, derivative_activation):
         for epoch in range(epoch):
             time_start = time.clock()
-            # TODO: Shuffle causes strong staggering in error rate plot
             # np.random.shuffle(training_set)
             epoch_error = 0
             correct_pred = 0
@@ -67,8 +64,6 @@ class NeuralNet:
             for training_data in training_set:
                 target = training_data[0]
                 training_input = training_data[1:]
-                # target = training_data[len(training_data)-2:len(training_data)]
-                # training_input = training_data[1:-2]
                 self.feedforward(training_input, activation_function)
                 self.compute_delta(target, derivative_activation)
                 self.update_weights(learning_rate)
@@ -90,8 +85,7 @@ class NeuralNet:
     def test(self, validation_set, relative_epoch, activation_function):
         total_error = 0
         correct_pred = 0
-        # TODO: Shuffle causes strong staggering in error rate plot
-        np.random.shuffle(validation_set)
+        # np.random.shuffle(validation_set)
         for i in range(len(validation_set)):
             validation_in = validation_set[i][1:]
             target = validation_set[i][0]

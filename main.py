@@ -14,13 +14,12 @@ def main():
 
     nn = NeuralNet()
     nn.init_inputLayer(17)
-    nn.init_layer(4, 17)
-    # nn.init_layer(2, 4)
-    nn.init_layer(6, 4)
-    nn.init_layer(1, 6)
+    nn.init_layer(3, 17)
+    # nn.init_layer(3, 6)
+    nn.init_layer(1, 3)
 
-    lr = 0.30
-    epochs = 125
+    lr = 0.3
+    epochs = 50
     activation_function = sigmoid_function
     derivative_activation = derivative_sigmoid
     nn.train(training_set, test_set, epochs, lr, activation_function, derivative_activation)
