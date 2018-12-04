@@ -1,6 +1,7 @@
 from neuralNetwork import NeuralNet, sigmoid_function, derivative_sigmoid, tanh_function, tanh_derivative
 from utils import get_dataset, horror_plot
-import multiprocessing as mp
+import numpy as np
+
 
 def main():
     train_csv_one_hot = "dataset/monk1/monk1train_onehot.csv"
@@ -12,14 +13,15 @@ def main():
     training_set = get_dataset(train_csv_one_hot)
     test_set = get_dataset(test_csv_one_hot)
 
+    testing_data = np.array([[10, 1, 2, 3], [10, 1, 2, 3]])
+
     nn = NeuralNet()
-    nn.init_inputLayer(17)
+    nn.init_input_layer(17)
     nn.init_layer(3, 17)
-    # nn.init_layer(3, 6)
     nn.init_layer(1, 3)
 
-    lr = 0.3
-    epochs = 50
+    lr = 0.09
+    epochs = 500
     activation_function = sigmoid_function
     derivative_activation = derivative_sigmoid
     nn.train(training_set, test_set, epochs, lr, activation_function, derivative_activation)

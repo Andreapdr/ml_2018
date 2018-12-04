@@ -15,7 +15,7 @@ class NeuralNet:
         self.accuracy_list = list()
         self.validation_accuracy_list = list()
 
-    def init_inputLayer(self, n_att):
+    def init_input_layer(self, n_att):
         self.layer_list.append(InputLayer(n_att))
 
     def init_layer(self, n_neuron, n_weights):
@@ -38,8 +38,6 @@ class NeuralNet:
             else:
                 delta_upstream = self.layer_list[i+1].delta
                 weights_upstream = self.layer_list[i+1].weights
-                # weights_upstream_no_bias = np.array([self.layer_list[i+1].weights[0][1:]])
-                # TODO: REMOVE WEIGHT CONNECTING BIAS TO UNIT - should not be taken into account when computing delta
                 sum_delta_weights_upstream = np.dot(delta_upstream, weights_upstream)
                 temp = np.multiply(sum_delta_weights_upstream, derivative_activation(self.layer_list[i].neurons))
                 self.layer_list[i].delta = temp
@@ -47,12 +45,11 @@ class NeuralNet:
     def update_weights(self, learning_rate):
         for i in range(1, len(self.layer_list)):
             # UPDATE BIAS FOR ENTIRE LAYER
-            self.layer_list[i].bias += np.multiply(self.layer_list[i].delta, self.layer_list[i].bias)
+            self.layer_list[i].bias += np.multiply(np.multiply(self.layer_list[i].delta, self.layer_list[i].bias), learning_rate)
             for j in range((self.layer_list[i].weights.shape[0])):
                 temp = self.layer_list[i].weights[j] + np.multiply(learning_rate, np.dot(self.layer_list[i].delta[j],
                                                                                          self.layer_list[i - 1].neurons))
                 self.layer_list[i].weights[j] = temp
-
 
     def train(self, training_set, validation_set, epoch, learning_rate, activation_function, derivative_activation):
         for epoch in range(epoch):
@@ -147,5 +144,5 @@ def tanh_function(x):
     return np.tanh(x)
 
 
-def tanh_derivative(output):
-    return 1 - output**2
+def tanh_derivative(x):
+    return 1 - x**2
