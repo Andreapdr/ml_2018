@@ -88,5 +88,44 @@ def horror_plot(network, lr, momentum):
     # plt.show()
 
 
+def horror_plot2(train_to_plot, test_to_plot, lr, momentum):
+    # plt.subplot(2, 1, 1)
+    plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
+    for error_list in train_to_plot:
+        cord_x = list()
+        cord_y = list()
+        cord_x_test = list()
+        cord_y_test = list()
+        for elem in error_list:
+            cord_x.append(elem[0])
+            cord_y.append(elem[1])
+        for elem in test_to_plot:
+            cord_x_test.append(elem[0])
+            cord_y_test.append(elem[1])
+        plt.plot(cord_x, cord_y, label="Error Rate Training")
+        plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # plt.subplot(2, 1, 2)
+    # plt.title(f"Accuracy")
+    # acc_cord_x = list()
+    # acc_cord_y = list()
+    # acc_cord_x_test = list()
+    # acc_cord_y_test = list()
+    # for elem in network.accuracy_list:
+    #     acc_cord_x.append(elem[0])
+    #     acc_cord_y.append(elem[1])
+    # for elem in network.validation_accuracy_list:
+    #     acc_cord_x_test.append(elem[0])
+    #     acc_cord_y_test.append(elem[1])
+    # plt.plot(acc_cord_x, acc_cord_y, label="Accuracy Training")
+    # plt.plot(acc_cord_x_test, acc_cord_y_test, label="Accuracy Validation")
+    # plt.legend()
+    # plt.grid(True)
+    # plt.tight_layout()
+    # plt.show()
+
 # from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
 # convert_to_one_hot("dataset/monk3/monk3test.csv", "dataset/monk3/monk3test_onehot.csv")

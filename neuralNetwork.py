@@ -3,8 +3,6 @@ from layer import Layer
 from inputLayer import InputLayer
 import time
 
-# TODO: BIAS NOT IMPLEMENTED AS IT SHOULD BE
-
 
 class NeuralNet:
 
@@ -45,7 +43,7 @@ class NeuralNet:
     def update_weights(self, learning_rate):
         for i in range(1, len(self.layer_list)):
             # UPDATE BIAS FOR ENTIRE LAYER
-            self.layer_list[i].bias += np.multiply(np.multiply(self.layer_list[i].delta, self.layer_list[i].bias), learning_rate)
+            self.layer_list[i].bias += np.multiply(self.layer_list[i].delta, learning_rate)
             for j in range((self.layer_list[i].weights.shape[0])):
                 temp = self.layer_list[i].weights[j] + np.multiply(learning_rate, np.dot(self.layer_list[i].delta[j],
                                                                                          self.layer_list[i - 1].neurons))
@@ -78,6 +76,8 @@ class NeuralNet:
             self.test(validation_set, epoch+1, activation_function)
             time_elapsed = round((time.clock() - time_start), 3)
             print(f"Time elapsed for epoch {epoch+1}: {time_elapsed}s")
+            # if correct_pred/len(training_set) < 0.5:
+            #     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     def test(self, validation_set, relative_epoch, activation_function):
         total_error = 0
@@ -130,6 +130,8 @@ class NeuralNet:
 
     def grid_search(self):
         pass
+
+#     TODO implement WEIGHT DECAY!
 
 
 def derivative_sigmoid(x):
