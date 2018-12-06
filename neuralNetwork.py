@@ -40,28 +40,34 @@ class NeuralNet:
                 temp = np.multiply(sum_delta_weights_upstream, derivative_activation(self.layer_list[i].neurons))
                 self.layer_list[i].delta = temp
 
-    def update_weights(self, learning_rate):
+    def update_weights(self, learning_rate, epoch):
         for i in range(1, len(self.layer_list)):
             # UPDATE BIAS FOR ENTIRE LAYER
             self.layer_list[i].bias += np.multiply(self.layer_list[i].delta, learning_rate)
+            # UPDATE WEIGHTS CYCLING THROUGH LAYERS
             for j in range((self.layer_list[i].weights.shape[0])):
-                temp = self.layer_list[i].weights[j] + np.multiply(learning_rate, np.dot(self.layer_list[i].delta[j],
-                                                                                         self.layer_list[i - 1].neurons))
+                weight_update = np.multiply(learning_rate, np.dot(self.layer_list[i].delta[j], self.layer_list[i - 1].neurons))
+                if epoch != 0:
+                    self.layer_list[i].previous_update[j] = weight_update
+                    weight_update = weight_update + np.multiply(0.2, self.layer_list[i].previous_update[j])
+                temp = self.layer_list[i].weights[j] + weight_update
                 self.layer_list[i].weights[j] = temp
 
-    def train(self, training_set, validation_set, epoch, learning_rate, activation_function, derivative_activation):
+    def train(self, training_set, validation_set, epoch, learning_rate, step_decay, activation_function, derivative_activation):
         for epoch in range(epoch):
             time_start = time.clock()
             # np.random.shuffle(training_set)
             epoch_error = 0
             correct_pred = 0
+            if epoch % 20 == 0 and epoch != 0:
+                learning_rate = learning_rate * step_decay
             print(f"\nEPOCH {epoch+1} _______________________________________")
             for training_data in training_set:
                 target = training_data[0]
                 training_input = training_data[1:]
                 self.feedforward(training_input, activation_function)
                 self.compute_delta(target, derivative_activation)
-                self.update_weights(learning_rate)
+                self.update_weights(learning_rate, epoch)
                 guess = 0
                 error = 0.5 * ((target - np.sum(self.layer_list[-1].neurons))**2)
                 if self.layer_list[-1].neurons > 0.5:
@@ -76,8 +82,6 @@ class NeuralNet:
             self.test(validation_set, epoch+1, activation_function)
             time_elapsed = round((time.clock() - time_start), 3)
             print(f"Time elapsed for epoch {epoch+1}: {time_elapsed}s")
-            # if correct_pred/len(training_set) < 0.5:
-            #     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     def test(self, validation_set, relative_epoch, activation_function):
         total_error = 0
@@ -100,18 +104,6 @@ class NeuralNet:
               f"Accuracy on Validation: "
               f"{round(correct_pred/len(validation_set), 5)}")
 
-    def get_number_neurons(self):
-        tot = 0
-        for i in range(1, len(self.layer_list)):
-            tot += len(self.layer_list[i].neurons)
-        return tot
-
-    def get_number_weights(self):
-        tot = 0
-        for i in range(1, len(self.layer_list)):
-            tot += self.layer_list[i].weights.shape[1] * len(self.layer_list[i].neurons)
-        return tot
-
     # TODO MOMENTUM to implement
     def momentum(self):
         pass
@@ -128,10 +120,11 @@ class NeuralNet:
     def cross_validation(self):
         pass
 
+    # TODO GRID SEARCH
     def grid_search(self):
         pass
 
-#     TODO implement WEIGHT DECAY!
+    # TODO implement LR/MOMENTUM DECAY!
 
 
 def derivative_sigmoid(x):
