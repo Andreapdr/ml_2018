@@ -49,7 +49,44 @@ def get_dataset(name_csv):
     return dataset_np
 
 
-def horror_plot(network_list, lr, momentum):
+def horror_plot(network, lr, momentum):
+    plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
+    cord_x = list()
+    cord_y = list()
+    cord_x_test = list()
+    cord_y_test = list()
+    for elem in network.error_list:
+        cord_x.append(elem[0])
+        cord_y.append(elem[1])
+    for elem in network.validation_error_list:
+        cord_x_test.append(elem[0])
+        cord_y_test.append(elem[1])
+    plt.plot(cord_x, cord_y, label=f"Error Rate Training")
+    plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    # plt.title(f"Accuracy")
+    # acc_cord_x = list()
+    # acc_cord_y = list()
+    # acc_cord_x_test = list()
+    # acc_cord_y_test = list()
+    # for elem in network.accuracy_list:
+    #     acc_cord_x.append(elem[0])
+    #     acc_cord_y.append(elem[1])
+    # for elem in network.validation_accuracy_list:
+    #     acc_cord_x_test.append(elem[0])
+    #     acc_cord_y_test.append(elem[1])
+    # plt.plot(acc_cord_x, acc_cord_y, label="Accuracy Training")
+    # plt.plot(acc_cord_x_test, acc_cord_y_test, label="Accuracy Validation")
+    # plt.legend()
+    # plt.grid(True)
+    # plt.tight_layout()
+    # plt.show()
+
+
+def horror_plot2(network_list, lr, momentum):
     for index, network in enumerate(network_list):
         plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
         cord_x = list()
@@ -87,7 +124,6 @@ def horror_plot(network_list, lr, momentum):
     # plt.show()
 
 
-# TODO: what if data cannot be split evenly ?
 def k_fold(data, folding):
     if folding == 1:
         len_training = len(data)//100 * 85
@@ -97,18 +133,24 @@ def k_fold(data, folding):
     else:
         len_data = len(data)
         fold_len = len_data // folding
-        fold_len2 = len_data // folding
+        remainder = len_data % folding
         folded = []
         train = []
         validation = []
         t = 0
-        for i in range(fold_len, len_data + fold_len, fold_len):
-            if i == fold_len:
-                folded.append(data[t:i+1])
+        for i in range(fold_len, len_data, fold_len):
+            if i == fold_len * (folding):
+                folded.append(data[t:])
                 t = i
             else:
                 folded.append(data[t:i])
                 t = i
+            # if i == fold_len:
+            #     folded.append(data[t:i])
+            #     t = i
+            # else:
+            #     folded.append(data[t:i])
+            #     t = i
         for i in range(len(folded)):
             temp_folded = folded.copy()
             temp_folded.pop(i)

@@ -19,7 +19,7 @@ class NeuralNet:
     def init_layer(self, n_neuron, n_weights, activation):
         self.layer_list.append(Layer(n_neuron, n_weights, activation))
 
-    def feedforward(self, input_given, activation_function):
+    def feedforward(self, input_given):
         self.layer_list[0].init_input(input_given)
         for i in range(1, len(self.layer_list)):
             inputs = self.layer_list[i-1].neurons
@@ -28,7 +28,7 @@ class NeuralNet:
             self.layer_list[i].neurons += self.layer_list[i].bias
             self.layer_list[i].activation_layer()
 
-    def compute_delta(self, target, derivative_activation):
+    def compute_delta(self, target):
         for i in range(len(self.layer_list)-1, 0, -1):
             # delta output_layer
             if i == len(self.layer_list)-1:
@@ -58,7 +58,7 @@ class NeuralNet:
                 temp = self.layer_list[i].weights[j] + weight_update
                 self.layer_list[i].weights[j] = temp
 
-    def train(self, training_set, validation_set, epoch, learning_rate, alpha, step_decay, activation_function, derivative_activation):
+    def train(self, training_set, validation_set, epoch, learning_rate, alpha, step_decay):
         for epoch in range(epoch):
             time_start = time.clock()
             # np.random.shuffle(training_set)
@@ -70,8 +70,8 @@ class NeuralNet:
             for training_data in training_set:
                 target = training_data[0]
                 training_input = training_data[1:]
-                self.feedforward(training_input, activation_function)
-                self.compute_delta(target, derivative_activation)
+                self.feedforward(training_input)
+                self.compute_delta(target)
                 self.update_weights(learning_rate, epoch, alpha)
                 guess = 0
                 # error = 0.5 * ((target - np.sum(self.layer_list[-1].neurons))**2)
@@ -85,18 +85,18 @@ class NeuralNet:
                   f"Accuracy on Training:   {round(correct_pred/len(training_set), 5)}")
             self.error_list.append((epoch+1, epoch_error/len(training_set)))
             self.accuracy_list.append((epoch+1, correct_pred/len(training_set)))
-            self.test(validation_set, epoch+1, activation_function)
+            self.test(validation_set, epoch+1)
             time_elapsed = round((time.clock() - time_start), 3)
             print(f"Time elapsed for epoch {epoch+1}: {time_elapsed}s")
 
-    def test(self, validation_set, relative_epoch, activation_function):
+    def test(self, validation_set, relative_epoch):
         total_error = 0
         correct_pred = 0
         # np.random.shuffle(validation_set)
         for i in range(len(validation_set)):
             validation_in = validation_set[i][1:]
             target = validation_set[i][0]
-            self.feedforward(validation_in, activation_function)
+            self.feedforward(validation_in)
             error = 0.5 * ((target - np.sum(self.layer_list[-1].neurons))**2)
             total_error += error
             guess = 0
