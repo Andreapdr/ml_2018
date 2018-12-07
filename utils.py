@@ -49,26 +49,25 @@ def get_dataset(name_csv):
     return dataset_np
 
 
-def horror_plot(network, lr, momentum):
-    # plt.subplot(2, 1, 1)
-    plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
-    cord_x = list()
-    cord_y = list()
-    cord_x_test = list()
-    cord_y_test = list()
-    for elem in network.error_list:
-        cord_x.append(elem[0])
-        cord_y.append(elem[1])
-    for elem in network.validation_error_list:
-        cord_x_test.append(elem[0])
-        cord_y_test.append(elem[1])
-    plt.plot(cord_x, cord_y, label="Error Rate Training")
-    plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
+def horror_plot(network_list, lr, momentum):
+    for index, network in enumerate(network_list):
+        plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
+        cord_x = list()
+        cord_y = list()
+        cord_x_test = list()
+        cord_y_test = list()
+        for elem in network.error_list:
+            cord_x.append(elem[0])
+            cord_y.append(elem[1])
+        for elem in network.validation_error_list:
+            cord_x_test.append(elem[0])
+            cord_y_test.append(elem[1])
+        plt.plot(cord_x, cord_y, label=f"Error Rate Training {index+1}")
+        # plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
     plt.grid(True)
     plt.legend()
     plt.show()
 
-    # plt.subplot(2, 1, 2)
     # plt.title(f"Accuracy")
     # acc_cord_x = list()
     # acc_cord_y = list()
@@ -86,6 +85,38 @@ def horror_plot(network, lr, momentum):
     # plt.grid(True)
     # plt.tight_layout()
     # plt.show()
+
+
+# TODO: what if data cannot be split evenly ?
+def k_fold(data, folding):
+    if folding == 1:
+        len_training = len(data)//100 * 85
+        training = data[:len_training]
+        validation = data[len_training:]
+        return [training], [validation]
+    else:
+        len_data = len(data)
+        fold_len = len_data // folding
+        fold_len2 = len_data // folding
+        folded = []
+        train = []
+        validation = []
+        t = 0
+        for i in range(fold_len, len_data + fold_len, fold_len):
+            if i == fold_len:
+                folded.append(data[t:i+1])
+                t = i
+            else:
+                folded.append(data[t:i])
+                t = i
+        for i in range(len(folded)):
+            temp_folded = folded.copy()
+            temp_folded.pop(i)
+            temp_train = np.vstack(temp_folded)
+            train.append(temp_train)
+            validation.append(folded[i])
+        return train, validation
+
 
 # from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
 # convert_to_one_hot("dataset/monk3/monk3test.csv", "dataset/monk3/monk3test_onehot.csv")
