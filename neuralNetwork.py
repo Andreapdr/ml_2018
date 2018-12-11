@@ -82,17 +82,20 @@ class NeuralNet:
                     target_train = training_data[0]
                     training_input = training_data[1:]
                 elif task == "cup":
-                    target_train = 1
-                    training_input = 1
+                    bound = len(training_data)
+                    training_input = training_data[1:bound-2]
+                    target_train = training_data[bound-2:]
                 self.feedforward(training_input)
                 error_out = self.compute_delta(target_train)
                 epoch_error += np.sum(error_out)
                 self.update_weights(eta, alpha)
+                guess = self.layer_list[-1].out
 
-                guess = 0
-                pred_temp = self.layer_list[-1].out
-                if pred_temp > 0.5:
-                    guess = 1
+                if task == "monk":
+                    guess = 0
+                    pred_temp = self.layer_list[-1].out
+                    if pred_temp > 0.5:
+                        guess = 1
 
                 res = np.sum(np.subtract(target_train, guess))
                 if res == 0:
@@ -103,9 +106,10 @@ class NeuralNet:
             time_elapsed = round((time.clock() - time_start), 3)
             print(f"Time elapsed for epoch {epoch + 1}: {time_elapsed}s")
             self.error_list.append((epoch + 1, epoch_error / len(training_set)))
-            self.test(validation_set, epoch+1)
+            if task == "monk":
+                self.test(task, validation_set, epoch+1)
 
-    def test(self, validation_set, relative_epoch):
+    def test(self, task, validation_set, relative_epoch):
         total_error = 0
         correct_pred = 0
         for i in range(len(validation_set)):
@@ -115,10 +119,11 @@ class NeuralNet:
             error = self.loss_function(target)
             total_error += np.sum(error)
 
-            guess = 0
-            pred_temp = self.layer_list[-1].out
-            if pred_temp > 0.5:
-                guess = 1
+            if task == "monk":
+                guess = 0
+                pred_temp = self.layer_list[-1].out
+                if pred_temp > 0.5:
+                    guess = 1
 
             res = np.sum(np.subtract(target, guess))
             if res == 0:
@@ -149,4 +154,4 @@ def mean_euclidean_error(target_value, neurons_out, deriv=False):
     res = np.sum(res, axis=0)
     res = np.sqrt(res)
     res = np.sum(res, axis=0)
-    return (res / target_value.shape[1])
+    return (res / len(neurons_out))

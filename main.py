@@ -5,6 +5,8 @@ from utils import get_dataset, horror_plot, k_fold
     alpha = Momentum
     step_decay = value multiplying learning rate every 20 epochs - should be lower than 1 """
 
+# TODO: IMPLEMENT BIAS AND REGULARIZATION
+
 
 def test_monk():
     nn = NeuralNet("mean_squared_error")
@@ -27,13 +29,13 @@ def test_monk():
     horror_plot(nn, eta, 0)
 
 
-def run_model_cup_no_kfold():
+def run_cup():
     training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
 
     training_set = get_dataset(training_cup)
     validation_set = get_dataset(training_cup)
 
-    nn = NeuralNet("mean_euclidean_error")
+    nn = NeuralNet("mean_squared_error")
     nn.init_input_layer(10)
     nn.init_layer(23, 10, "tanh")
     nn.init_layer(23, 23, "tanh")
@@ -41,10 +43,11 @@ def run_model_cup_no_kfold():
     nn.init_layer(2, 23, "linear")
 
     task = "cup"
-    eta = 0.003
+    eta = 0.0003
     alpha = 0.3
     epochs = 100
-    nn.train(task, training_set, validation_set, epoch, eta, alpha)
+    nn.train(task, training_set, validation_set, epochs, eta, alpha)
+    horror_plot(nn, eta, 0)
 
 
 def run_model_cup_kfold():
