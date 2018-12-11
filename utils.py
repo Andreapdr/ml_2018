@@ -58,11 +58,11 @@ def horror_plot(network, lr, momentum):
     for elem in network.error_list:
         cord_x.append(elem[0])
         cord_y.append(elem[1])
-    # for elem in network.validation_error_list:
-    #     cord_x_test.append(elem[0])
-    #     cord_y_test.append(elem[1])
+    for elem in network.validation_error_list:
+        cord_x_test.append(elem[0])
+        cord_y_test.append(elem[1])
     plt.plot(cord_x, cord_y, label=f"Error Rate Training")
-    # plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
+    plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
     plt.grid(True)
     plt.legend()
     plt.show()

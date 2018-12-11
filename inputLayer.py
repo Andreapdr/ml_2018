@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class InputLayer:
 
     def __init__(self, n_att):

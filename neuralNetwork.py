@@ -11,6 +11,7 @@ class NeuralNet:
         self.set_loss_function(loss)
         self.layer_list = list()
         self.error_list = list()
+        self.validation_error_list = list()
 
     def set_loss_function(self, loss):
         if loss == "mean_squared_error":
@@ -69,7 +70,7 @@ class NeuralNet:
             layers[i].weights += delta_weights.T
             layers[i].last_deltaW = delta_weights
 
-    def train(self, training_set, epochs, eta, alpha):
+    def train(self, task, training_set, validation_set, epochs, eta, alpha):
         for epoch in range(epochs):
             time_start = time.clock()
             np.random.shuffle(training_set)
@@ -77,8 +78,12 @@ class NeuralNet:
             correct_pred = 0
             print(f"\nEPOCH {epoch + 1} _______________________________________")
             for training_data in training_set:
-                target_train = training_data[0]
-                training_input = training_data[1:]
+                if task == "monk":
+                    target_train = training_data[0]
+                    training_input = training_data[1:]
+                elif task == "cup":
+                    target_train = 1
+                    training_input = 1
                 self.feedforward(training_input)
                 error_out = self.compute_delta(target_train)
                 epoch_error += np.sum(error_out)
@@ -98,6 +103,31 @@ class NeuralNet:
             time_elapsed = round((time.clock() - time_start), 3)
             print(f"Time elapsed for epoch {epoch + 1}: {time_elapsed}s")
             self.error_list.append((epoch + 1, epoch_error / len(training_set)))
+            self.test(validation_set, epoch+1)
+
+    def test(self, validation_set, relative_epoch):
+        total_error = 0
+        correct_pred = 0
+        for i in range(len(validation_set)):
+            validation_in = validation_set[i][1:]
+            target = validation_set[i][0]
+            self.feedforward(validation_in)
+            error = self.loss_function(target)
+            total_error += np.sum(error)
+
+            guess = 0
+            pred_temp = self.layer_list[-1].out
+            if pred_temp > 0.5:
+                guess = 1
+
+            res = np.sum(np.subtract(target, guess))
+            if res == 0:
+                correct_pred += 1
+
+        self.validation_error_list.append((relative_epoch, total_error/len(validation_set)))
+        # self.validation_accuracy_list.append((relative_epoch, correct_pred/len(validation_set)))
+        print(f"Total Error for Epoch on Validata Set: {round(total_error/len(validation_set), 5)}\n"
+              f"Accuracy on Validation: {round(correct_pred/len(validation_set), 5)}")
 
 
 def mean_squared_error(target, output, derivative):

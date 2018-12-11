@@ -1,5 +1,5 @@
 from neuralNetwork import NeuralNet
-from utils import get_dataset, horror_plot, horror_plot2, k_fold
+from utils import get_dataset, horror_plot, k_fold
 
 """ lr = Learning Rate,
     alpha = Momentum
@@ -16,25 +16,35 @@ def test_monk():
     test_csv_one_hot = "dataset/monk2/monk2test_onehot.csv"
 
     training_set = get_dataset(train_csv_one_hot)
-    test_set = get_dataset(test_csv_one_hot)
+    validation_set = get_dataset(test_csv_one_hot)
 
-    eta = 0.3
+    task = "monk"
+    eta = 0.03
     alpha = 0.2
     epochs = 100
-    nn.train(training_set, epochs, eta, alpha)
+    nn.train(task, training_set, validation_set, epochs, eta, alpha)
 
     horror_plot(nn, eta, 0)
 
 
 def run_model_cup_no_kfold():
-    train_csv_one_hot = "dataset/monk1/monk1train_onehot.csv"
-    test_csv_one_hot = "dataset/monk1/monk1test_onehot.csv"
-    train_csv = "dataset/monk1/monk1train.csv"
-    test_csv = "dataset/monk1/monk1test.csv"
     training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
 
     training_set = get_dataset(training_cup)
-    test_set = get_dataset(training_cup)
+    validation_set = get_dataset(training_cup)
+
+    nn = NeuralNet("mean_euclidean_error")
+    nn.init_input_layer(10)
+    nn.init_layer(23, 10, "tanh")
+    nn.init_layer(23, 23, "tanh")
+    nn.init_layer(23, 23, "tanh")
+    nn.init_layer(2, 23, "linear")
+
+    task = "cup"
+    eta = 0.003
+    alpha = 0.3
+    epochs = 100
+    nn.train(task, training_set, validation_set, epoch, eta, alpha)
 
 
 def run_model_cup_kfold():
