@@ -1,139 +1,147 @@
 import numpy as np
 from layer import Layer
-from pprint import pprint
+from inputLayer import InputLayer
 import time
 
 
 class NeuralNet:
 
     def __init__(self):
-        self.error_list_test = list()
         self.layer_list = list()
         self.error_list = list()
+        self.validation_error_list = list()
         self.accuracy_list = list()
-        self.accuracy_list_test = list()
+        self.validation_accuracy_list = list()
 
-    def initialize_layer(self, n_neuron, n_neuron_weights):
-        self.layer_list.append(Layer(n_neuron, n_neuron_weights))
+    def init_input_layer(self, n_att):
+        self.layer_list.append(InputLayer(n_att))
 
-    def feedforward(self, row_input):
-        actual_input = row_input
-        for i in range(len(self.layer_list)):
-            layer = self.layer_list[i]
-            layer.compute_input_layer(actual_input)
-            next_input = layer.compute_squash_layer_sigmoid()
-            actual_input = next_input
+    def init_layer(self, n_neuron, n_weights, activation):
+        self.layer_list.append(Layer(n_neuron, n_weights, activation))
 
-    def compute_output(self, nn_input):
-        for i in range(len(self.layer_list)):
-            layer = self.layer_list[i]
-            layer.compute_input_layer(nn_input)
+    def feedforward(self, input_given):
+        self.layer_list[0].init_input(input_given)
+        for i in range(1, len(self.layer_list)):
+            inputs = self.layer_list[i-1].neurons
+            self.layer_list[i].neurons = np.dot(inputs, self.layer_list[i].weights.T)
+            # self.layer_list[i].neurons = activation_function(self.layer_list[i].neurons + self.layer_list[i].bias)
+            self.layer_list[i].neurons += self.layer_list[i].bias
+            self.layer_list[i].activation_layer()
 
-    def compute_delta_output_layer(self, target):
-        error_output_layer = 0.00
-        output_layer = self.layer_list[-1]
-        for j, neuron in enumerate(output_layer.neurons):
-            # for multiple target values
-            # err = neuron.compute_delta_output(target[j])
-            err = neuron.compute_delta_output(target)
-            # TODO: CHECK CODE HERE
-            error_output_layer += 0.5 * (err ** 2)
-        return error_output_layer
-
-    ''' iterate the layer_list in reverse order starting
-        j is equal to the index of neuron-> retrieve its weights '''
-    def compute_delta_hidden_layer(self):
-        error_input_layer = 0.00
+    def compute_delta(self, target):
         for i in range(len(self.layer_list)-1, 0, -1):
-            layer = self.layer_list[i-1]
-            next_layer = self.layer_list[i]
-            for j, neuron in enumerate(layer.neurons):
-                err = neuron.compute_delta_hidden(next_layer, j)
-                error_input_layer += err
-        return error_input_layer
+            # delta output_layer
+            if i == len(self.layer_list)-1:
+                # self.layer_list[i].delta = np.array(np.multiply(derivative_activation(self.layer_list[i].neurons),
+                #                                                 (target - self.layer_list[i].neurons)))
+                self.layer_list[i].delta = np.array(np.multiply(self.layer_list[i].activation_function_derivative(),
+                                                                (target - self.layer_list[i].neurons)))
+            # delta hidden layers
+            else:
+                delta_upstream = self.layer_list[i+1].delta
+                weights_upstream = self.layer_list[i+1].weights
+                sum_delta_weights_upstream = np.dot(delta_upstream, weights_upstream)
+                # temp = np.multiply(sum_delta_weights_upstream, derivative_activation(self.layer_list[i].neurons))
+                temp = sum_delta_weights_upstream * self.layer_list[i].activation_function_derivative()
+                self.layer_list[i].delta = temp
 
-    ''' Updating weights: w_new += delta_Wji
-        where delta_Wji = lr * delta_j * input_ji '''
-    def update_weights(self, learning_rate, momentum, alpha):
-        for layer in self.layer_list:
-            for neuron in layer.neurons:
-                for i in range(len(neuron.weights)):
-                    # TODO: IMPLEMENT WEIGHT DECAY TIKHONOV
-                    # TODO: optimize this by vectorizing the update process
-                    previous_update_coeff = neuron.update_coeff[i]
-                    momentum_term = momentum * previous_update_coeff
-                    update_coeff = learning_rate * neuron.delta * neuron.inputs_list[i]
-                    weight_update = momentum_term + update_coeff
-                    new_update_coeff = update_coeff
-                    neuron.update_coeff[i] = new_update_coeff
-                    new_weight = neuron.weights[i] + weight_update - (2 * alpha * neuron.weights[i])
-                    neuron.weights[i] = new_weight
+    def update_weights(self, learning_rate, epoch, alpha):
+        for i in range(1, len(self.layer_list)):
+            # UPDATE BIAS FOR ENTIRE LAYER
+            self.layer_list[i].bias += np.multiply(self.layer_list[i].delta, learning_rate)
+            # UPDATE WEIGHTS CYCLING THROUGH LAYERS
+            for j in range((self.layer_list[i].weights.shape[0])):
+                weight_update = np.multiply(learning_rate, np.dot(self.layer_list[i].delta[j], self.layer_list[i - 1].neurons))
+                if epoch != 0:
+                    self.layer_list[i].previous_update[j] = weight_update
+                    weight_update = weight_update + np.multiply(alpha, self.layer_list[i].previous_update[j])
+                temp = self.layer_list[i].weights[j] + weight_update
+                self.layer_list[i].weights[j] = temp
 
-    def training(self, n_epochs, tr_set, val_test, learning_rate=0.01, momentum=0.00, alpha=0.00,
-                 step_decay=False, lr_decay=False, verbose=False):
-        current_learning_rate = learning_rate
-        for j in range(n_epochs):
+    def train(self, training_set, validation_set, epoch, learning_rate, alpha, step_decay):
+        for epoch in range(epoch):
             time_start = time.clock()
-            print(f"\nEPOCH {j+1} ___________________________")
-            epoch_error = 0.00
-            correct_predictions = 0.00
-            # use different order of patterns in different epochs
-            np.random.shuffle(tr_set)
-            # STEP DECAY: learning rate is cut by 10 every 10 epochs
-            if step_decay:
-                if j % 10 == 0 and j != 0:
-                    current_learning_rate = current_learning_rate/10
-            if lr_decay:
-                current_learning_rate -= 0.001
-            for i in range(len(tr_set)):
-                tr_in = tr_set[i][1:]
-                target = tr_set[i][0]
-                self.feedforward(tr_in)
-                err_out = self.compute_delta_output_layer(target)
-                self.compute_delta_hidden_layer()
-                epoch_error += err_out
-                self.update_weights(learning_rate, momentum, alpha)
-                nn_output = self.layer_list[len(self.layer_list)-1].neurons[0].compute_output_final()
-                correct_predictions += 1 - abs(target - nn_output)
-            print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(tr_set), 5)}\n"
-                  f"Accuracy on Training:   {round(correct_predictions/len(tr_set), 5)}")
-            # Compute normalization of error: (epoch_error/len(tr(set)))
-            self.error_list.append((j, epoch_error/len(tr_set)))
-            self.accuracy_list.append((j, correct_predictions/len(tr_set)))
-            self.test_eval(val_test, j)
-            time_elapsed = round(((time.clock() - time_start)), 3)
-            print(f"Time elapsed for epoch {j+1}: {time_elapsed}s")
-        if verbose:
-            print(f"Final NN: Weights:")
-            for layer in self.layer_list:
-                for neuron in layer.neurons:
-                    pprint(neuron.weights)
+            # np.random.shuffle(training_set)
+            epoch_error = 0
+            correct_pred = 0
+            if epoch % 20 == 0 and epoch != 0:
+                learning_rate = learning_rate * step_decay
+            print(f"\nEPOCH {epoch+1} _______________________________________")
+            for training_data in training_set:
+                target = training_data[0]
+                training_input = training_data[1:]
+                self.feedforward(training_input)
+                self.compute_delta(target)
+                self.update_weights(learning_rate, epoch, alpha)
+                guess = 0
+                # error = 0.5 * ((target - np.sum(self.layer_list[-1].neurons))**2)
+                error = 0.5 * mean_squared_error(target, self.layer_list[-1].neurons)
+                if self.layer_list[-1].neurons > 0.5:
+                    guess = 1
+                if (guess == target).all():
+                    correct_pred += 1
+                epoch_error += np.sum(error)
+            print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(training_set), 5)}\n"
+                  f"Accuracy on Training:   {round(correct_pred/len(training_set), 5)}")
+            self.error_list.append((epoch+1, epoch_error/len(training_set)))
+            self.accuracy_list.append((epoch+1, correct_pred/len(training_set)))
+            self.test(validation_set, epoch+1)
+            time_elapsed = round((time.clock() - time_start), 3)
+            print(f"Time elapsed for epoch {epoch+1}: {time_elapsed}s")
 
-    def test_eval(self, test_set, iteration):
-        correct_predictions = 0
-        epoch_error = 0
-        for i in range(len(test_set)):
-            test_in = test_set[i][1:]
-            target = test_set[i][0]
-            self.feedforward(test_in)
-            err_out = self.compute_delta_output_layer(target)
-            epoch_error += err_out
-            nn_output = self.layer_list[len(self.layer_list)-1].neurons[0].compute_output_final()
-            correct_predictions += 1 - abs(target - nn_output)
-        print(f"Total Error for Epoch on Validata Set: {round(epoch_error/len(test_set), 5)}\n"
+    def test(self, validation_set, relative_epoch):
+        total_error = 0
+        correct_pred = 0
+        # np.random.shuffle(validation_set)
+        for i in range(len(validation_set)):
+            validation_in = validation_set[i][1:]
+            target = validation_set[i][0]
+            self.feedforward(validation_in)
+            error = 0.5 * ((target - np.sum(self.layer_list[-1].neurons))**2)
+            total_error += error
+            guess = 0
+            if self.layer_list[-1].neurons > 0.5:
+                guess = 1
+            if guess == target:
+                correct_pred += 1
+        self.validation_error_list.append((relative_epoch, total_error/len(validation_set)))
+        self.validation_accuracy_list.append((relative_epoch, correct_pred/len(validation_set)))
+        print(f"Total Error for Epoch on Validata Set: {round(total_error/len(validation_set), 5)}\n"
               f"Accuracy on Validation: "
-              f"{round(correct_predictions/len(test_set), 5)}")
-        self.error_list_test.append((iteration, epoch_error/len(test_set)))
-        self.accuracy_list_test.append((iteration, correct_predictions/len(test_set)))
+              f"{round(correct_pred/len(validation_set), 5)}")
 
-    def test(self, test_set):
-        print("TEST RESULTS\n____________________________________")
-        correct_predictions = 0
-        for i in range(len(test_set)):
-            test_in = test_set[i][1:]
-            target = test_set[i][0]
-            self.feedforward(test_in)
-            nn_output = self.layer_list[1].neurons[0].compute_output_final()
-            correct_predictions += 1 - abs(target - nn_output)
-        print(f"Accuracy: {correct_predictions/len(test_set)}\n"
-              f"Total Predictions: {len(test_set)}")
+    # TODO REGULARIZATION to implement
+    def regularization(self):
+        pass
+
+    # TODO to implement GridSearch and CrossValidation
+    def cross_validation(self):
+        pass
+
+    # TODO GRID SEARCH
+    def grid_search(self):
+        pass
+
+
+def derivative_sigmoid(x):
+    return x * (1 - x)
+
+
+def sigmoid_function(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def tanh_function(x):
+    return np.tanh(x)
+
+
+def tanh_derivative(x):
+    return 1 - x**2
+
+
+def mean_squared_error(target, output):
+    return np.subtract(target, output) ** 2
+
+
+def mean_euclidean_error(target, output):
+    pass
