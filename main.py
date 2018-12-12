@@ -3,50 +3,51 @@ from utils import get_dataset, horror_plot, horror_plot2, k_fold
 
 """ lr = Learning Rate,
     alpha = Momentum
-    step_decay = value multiplying learning rate every 20 epochs - should be lower than 1 """
+    step_decay = value by which the learning rate is multiplied every 20 epochs - should be lower than 1 """
 
+# Importing dataset
+train_csv_one_hot = "dataset/monk2/monk2train_onehot.csv"
+test_csv_one_hot = "dataset/monk2/monk2test_onehot.csv"
+train_csv = "dataset/monk1/monk1train.csv"
+test_csv = "dataset/monk1/monk1test.csv"
+testing_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+
+# NB: USING TEST SET TO TRAIN B/C MONK DATASET ...
+training_set = get_dataset(train_csv_one_hot)
+test_set = get_dataset(test_csv_one_hot)
+
+# Setting hyperparameters
+lr = 0.3
+epochs = 150
+alpha = 0.2
+step_decay = 1
+kfold = False
+
+
+# Model without K-fold
 def run_model_no_kfold():
-    train_csv_one_hot = "dataset/monk1/monk1train_onehot.csv"
-    test_csv_one_hot = "dataset/monk1/monk1test_onehot.csv"
-    train_csv = "dataset/monk1/monk1train.csv"
-    test_csv = "dataset/monk1/monk1test.csv"
-    testing_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+    nn = NeuralNet()                # initializing network
+    nn.init_input_layer(17)         # initializing input layer
 
-    training_set = get_dataset(train_csv_one_hot)
-    test_set = get_dataset(test_csv_one_hot)
+    # adding layers
+    nn.init_layer(4, 17, "sigmoid")
+    nn.init_layer(1, 4, "sigmoid")
 
-    # NO KFOLD
-    for i in range(1):
-        nn = NeuralNet()
-        nn.init_input_layer(17)
-        nn.init_layer(4, 17, "sigmoid")
-        nn.init_layer(1, 4, "sigmoid")
+    nn.train(training_set, test_set, epochs, lr, alpha, step_decay)     # training network
 
-        lr = 0.3
-        epochs = 150
-        alpha = 0.2
-        step_decay = 1
-        nn.train(training_set, test_set, epochs, lr, alpha, step_decay)
-
-    horror_plot(nn, lr, 0)
+    horror_plot(nn, lr, 0)          # screening
 
 
+# Model with K-fold
 def run_model_kfold():
-    train_csv_one_hot = "dataset/monk2/monk2train_onehot.csv"
-    test_csv_one_hot = "dataset/monk2/monk2test_onehot.csv"
-    train_csv = "dataset/monk1/monk1train.csv"
-    test_csv = "dataset/monk1/monk1test.csv"
-    testing_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
-
-    # NB: USING TEST SET TO TRAIN B/C MONK DATASET ...
-    training_set = get_dataset(train_csv_one_hot)
-    test_set = get_dataset(test_csv_one_hot)
-
-    train_folded, val_folded = k_fold(test_set, 5)
+    x = test_set
+    train_folded, val_folded = k_fold(test_set, 5)      # split dataset in k folds. For each fold 1/5 is used as val
     nn_to_plot = []
     for i in range(len(train_folded)):
-        nn = NeuralNet()
-        nn.init_input_layer(17)
+        nn = NeuralNet()            # initializing network
+        nn.init_input_layer(17)     # initializing input layer
+
+        # adding layers
         nn.init_layer(4, 17, "sigmoid")
         nn.init_layer(3, 4, "sigmoid")
         nn.init_layer(1, 3, "sigmoid")
@@ -54,15 +55,15 @@ def run_model_kfold():
         tr = train_folded[i]
         tval = val_folded[i]
 
-        lr = 0.3
-        epochs = 75
-        alpha = 0.2
-        step_decay = 1
         nn.train(tr, tval, epochs, lr, alpha, step_decay)
-        nn_to_plot.append(nn)
+        nn_to_plot.append(nn)   # add neural network to an array to be plotted
 
-    horror_plot2(nn_to_plot, lr, 0)
+    horror_plot2(nn_to_plot, lr, 0)     # screening
+
 
 if __name__ == "__main__":
-    run_model_no_kfold()
+    if kfold:
+        run_model_kfold()
+    else:
+        run_model_no_kfold()
 
