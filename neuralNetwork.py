@@ -58,15 +58,17 @@ class NeuralNet:
                     weight_update = weight_update + np.multiply(alpha, self.layer_list[i].previous_update[j])    # adding momentum
                     self.layer_list[i].weights[j] = self.layer_list[i].weights[j] + weight_update     # updating weights
 
-    def train(self, training_set, validation_set, epoch, learning_rate, alpha, step_decay):
+    def train(self, training_set, validation_set, epoch, learning_rate, alpha, step_decay, verbose):
         for epoch in range(epoch):              # loop through epochs
-            time_start = time.clock()           # start counting time
+            if verbose:
+                time_start = time.clock()           # start counting time
             # np.random.shuffle(training_set)
             epoch_error = 0
             correct_pred = 0
             if epoch % 20 == 0 and epoch != 0:          # decrease learning rate every n steps
                 learning_rate = learning_rate * step_decay
-            print(f"\nEPOCH {epoch+1} _______________________________________")
+            if verbose:
+                print(f"\nEPOCH {epoch+1} _______________________________________")
             for training_data in training_set:          # loop through training set
                 training_input = training_data[1:]
                 target = training_data[0]
@@ -84,18 +86,20 @@ class NeuralNet:
                     correct_pred += 1
                 # summing up total error for epoch
                 epoch_error += error
-            print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(training_set), 5)}\n"
-                  f"Accuracy on Training:   {round(correct_pred/len(training_set), 5)}")
+            if verbose:
+                print(f"Total Error for Epoch on Training Set: {round(epoch_error/len(training_set), 5)}\n"
+                      f"Accuracy on Training:   {round(correct_pred/len(training_set), 5)}")
             # adding error on the epoch to error list
             self.error_list.append((epoch+1, epoch_error/len(training_set)))
             # adding accuracy on the epoch to accuracy list
             self.accuracy_list.append((epoch+1, correct_pred/len(training_set)))
-            self.test(validation_set, epoch+1)
+            self.test(validation_set, epoch+1, verbose)
             # compute time spent for epoch
-            time_elapsed = round((time.clock() - time_start), 3)
-            print(f"Time elapsed for epoch {epoch+1}: {time_elapsed}s")
+            if verbose:
+                time_elapsed = round((time.clock() - time_start), 3)
+                print(f"Time elapsed for epoch {epoch+1}: {time_elapsed}s")
 
-    def test(self, validation_set, relative_epoch):
+    def test(self, validation_set, relative_epoch, verbose):
         total_error = 0
         correct_pred = 0
         # np.random.shuffle(validation_set)
@@ -116,9 +120,10 @@ class NeuralNet:
         self.validation_error_list.append((relative_epoch, total_error/len(validation_set)))
         # adding accuracy on the epoch to acccuracy list
         self.validation_accuracy_list.append((relative_epoch, correct_pred/len(validation_set)))
-        print(f"Total Error for Epoch on Validata Set: {round(total_error/len(validation_set), 5)}\n"
-              f"Accuracy on Validation: "
-              f"{round(correct_pred/len(validation_set), 5)}")
+        if verbose:
+            print(f"Total Error for Epoch on Validata Set: {round(total_error/len(validation_set), 5)}\n"
+                  f"Accuracy on Validation: "
+                  f"{round(correct_pred/len(validation_set), 5)}")
 
     # TODO REGULARIZATION to implement
     def regularization(self):
