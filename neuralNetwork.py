@@ -70,13 +70,15 @@ class NeuralNet:
             layers[i].weights += delta_weights.T
             layers[i].last_deltaW = delta_weights
 
-    def train(self, task, training_set, validation_set, epochs, eta, alpha):
+    def train(self, task, training_set, validation_set, epochs, eta, alpha, verbose):
         for epoch in range(epochs):
-            time_start = time.clock()
+            if verbose:
+                time_start = time.clock()
             np.random.shuffle(training_set)
             epoch_error = 0
             correct_pred = 0
-            print(f"\nEPOCH {epoch + 1} _______________________________________")
+            if verbose:
+                print(f"\nEPOCH {epoch + 1} _______________________________________")
             for training_data in training_set:
                 if task == "monk":
                     target_train = training_data[0]
@@ -100,21 +102,26 @@ class NeuralNet:
                 res = np.sum(np.subtract(target_train, guess))
                 if res == 0:
                     correct_pred += 1
-
-            print(f"Total Error for Epoch on Training Set: {round(epoch_error / len(training_set), 5)}\n"
-                  f"Accuracy on Training:   {round(correct_pred / len(training_set), 5)}")
-            time_elapsed = round((time.clock() - time_start), 3)
-            print(f"Time elapsed for epoch {epoch + 1}: {time_elapsed}s")
+            if verbose:
+                print(f"Total Error for Epoch on Training Set: {round(epoch_error / len(training_set), 5)}\n")
+                if task == "monk":
+                    print(f"Accuracy on Training:   {round(correct_pred / len(training_set), 5)}")
+                time_elapsed = round((time.clock() - time_start), 3)
+                print(f"Time elapsed for epoch {epoch + 1}: {time_elapsed}s")
             self.error_list.append((epoch + 1, epoch_error / len(training_set)))
-            if task == "monk":
-                self.test(task, validation_set, epoch+1)
+            self.test(task, validation_set, epoch+1, verbose)
 
-    def test(self, task, validation_set, relative_epoch):
+    def test(self, task, validation_set, relative_epoch, verbose):
         total_error = 0
         correct_pred = 0
         for i in range(len(validation_set)):
-            validation_in = validation_set[i][1:]
-            target = validation_set[i][0]
+            if task == "monk":
+                validation_in = validation_set[i][1:]
+                target = validation_set[i][0]
+            else:
+                bound = len(validation_set[i])
+                validation_in = validation_set[i][1:bound-2]
+                target = validation_set[i][bound-2:]
             self.feedforward(validation_in)
             error = self.loss_function(target)
             total_error += np.sum(error)
@@ -124,15 +131,15 @@ class NeuralNet:
                 pred_temp = self.layer_list[-1].out
                 if pred_temp > 0.5:
                     guess = 1
-
-            res = np.sum(np.subtract(target, guess))
-            if res == 0:
-                correct_pred += 1
-
+                res = np.sum(np.subtract(target, guess))
+                if res == 0:
+                    correct_pred += 1
+                self.validation_accuracy_list.append((relative_epoch, correct_pred / len(validation_set)))
         self.validation_error_list.append((relative_epoch, total_error/len(validation_set)))
-        # self.validation_accuracy_list.append((relative_epoch, correct_pred/len(validation_set)))
-        print(f"Total Error for Epoch on Validata Set: {round(total_error/len(validation_set), 5)}\n"
-              f"Accuracy on Validation: {round(correct_pred/len(validation_set), 5)}")
+        if verbose:
+            print(f"Total Error for Epoch on Validate Set: {round(total_error/len(validation_set), 5)}\n")
+            if task == "monk":
+                print(f"Accuracy on Validation: {round(correct_pred/len(validation_set), 5)}")
 
 
 def mean_squared_error(target, output, derivative):
