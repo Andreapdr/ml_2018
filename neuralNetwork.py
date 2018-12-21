@@ -12,6 +12,7 @@ class NeuralNet:
         self.layer_list = list()
         self.error_list = list()
         self.validation_error_list = list()
+        self.validation_accuracy_list = list()
 
     def set_loss_function(self, loss):
         if loss == "mean_squared_error":
@@ -28,7 +29,7 @@ class NeuralNet:
     def init_layer(self, n_neuron, n_weights, activation):
             self.layer_list.append(Layer(n_neuron, n_weights, activation))
 
-    def feedforward(self, input_prev):
+    def feedforward(self, input_prev, task):
         layers = self.layer_list
         layers[0].init_input(input_prev)
         for i in range(1, len(layers)):
@@ -36,7 +37,8 @@ class NeuralNet:
             layers[i].net = np.dot(input_prev, layers[i].weights.T)
             layers[i].net += layers[i].bias_W
             layers[i].out = layers[i].activation_function()
-            layers[i].out = np.around(layers[i].out, 6)
+            if task == "cup":
+                layers[i].out = np.around(layers[i].out, 6)
 
     def compute_delta(self, target):
         layers = self.layer_list
@@ -89,7 +91,7 @@ class NeuralNet:
                     bound = len(training_data)
                     training_input = training_data[1:bound-2]
                     target_train = training_data[bound-2:]
-                self.feedforward(training_input)
+                self.feedforward(training_input, task)
                 error_out = self.compute_delta(target_train)
                 epoch_error += np.sum(error_out)
                 self.update_weights(eta, alpha)
@@ -124,7 +126,7 @@ class NeuralNet:
                 bound = len(validation_set[i])
                 validation_in = validation_set[i][1:bound-2]
                 target = validation_set[i][bound-2:]
-            self.feedforward(validation_in)
+            self.feedforward(validation_in, task)
             error = self.loss_function(target)
             total_error += np.sum(error)
 
