@@ -36,7 +36,7 @@ class NeuralNet:
             layers[i].net = np.dot(input_prev, layers[i].weights.T)
             layers[i].net += layers[i].bias_W
             layers[i].out = layers[i].activation_function()
-
+            layers[i].out = np.around(layers[i].out, 6)
 
     def compute_delta(self, target):
         layers = self.layer_list
