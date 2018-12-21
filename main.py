@@ -5,7 +5,7 @@ from utils import get_dataset, horror_plot, k_fold
     alpha = Momentum
     step_decay = value multiplying learning rate every 20 epochs - should be lower than 1 """
 
-# TODO: IMPLEMENT BIAS AND REGULARIZATION
+# TODO: IMPLEMENT REGULARIZATION
 
 
 def run_monk():
