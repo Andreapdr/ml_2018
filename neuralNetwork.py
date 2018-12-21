@@ -28,13 +28,15 @@ class NeuralNet:
     def init_layer(self, n_neuron, n_weights, activation):
             self.layer_list.append(Layer(n_neuron, n_weights, activation))
 
-    def feedforward(self, input):
+    def feedforward(self, input_prev):
         layers = self.layer_list
-        layers[0].init_input(input)
+        layers[0].init_input(input_prev)
         for i in range(1, len(layers)):
-            input = layers[i-1].out
-            layers[i].net = np.dot(input, layers[i].weights.T)
+            input_prev = layers[i - 1].out
+            layers[i].net = np.dot(input_prev, layers[i].weights.T)
+            layers[i].net += layers[i].bias_W
             layers[i].out = layers[i].activation_function()
+
 
     def compute_delta(self, target):
         layers = self.layer_list
@@ -42,8 +44,6 @@ class NeuralNet:
         deriv_err_out = self.loss_function(target, derivative=True)
         deriv_act = layers[-1].activation_function(derivative=True)
         layers[-1].delta = deriv_act * deriv_err_out
-        # error_output = 0.5 * (target - layers[-1].out)**2
-        # TODO: SHOULD I DIVIDE BY 0.5 OR NOT? Doesnt really change anything though ...
         error_output = self.loss_function(target)
 
         for i in range(len(self.layer_list) - 2, 0, -1):
@@ -60,6 +60,8 @@ class NeuralNet:
         layers = self.layer_list
 
         for i in range(1, len(layers)):
+            layers[i].bias_W += self.layer_list[i].delta * eta
+
             momentum = layers[i].last_deltaW * alpha
 
             previous_input = np.array([layers[i-1].out])

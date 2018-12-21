@@ -7,6 +7,7 @@ class Layer:
         self.net = np.ones(n_neurons)
         self.out = np.ones(n_neurons)
         self.weights = np.random.uniform(low=-0.70, high=0.70, size=[n_neurons, n_weights])
+        self.bias_W = np.random.uniform(low=-0.20, high=0.20, size=[n_neurons])
         self.delta = np.zeros(n_neurons)
         self.activation = None
         self.error = None
