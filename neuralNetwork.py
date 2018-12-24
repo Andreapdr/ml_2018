@@ -58,7 +58,7 @@ class NeuralNet:
 
         return error_output
 
-    def update_weights(self, eta, alpha):
+    def update_weights(self, eta, alpha, lambd):
         layers = self.layer_list
 
         for i in range(1, len(layers)):
@@ -66,15 +66,18 @@ class NeuralNet:
 
             momentum = layers[i].last_deltaW * alpha
 
+            # TODO: REGULARIZATION TERM
+            reg_term = (lambd * layers[i].weights)
+
             previous_input = np.array([layers[i-1].out])
             deltas_layer = np.array([layers[i].delta])
             delta_weights = np.dot(previous_input.T, deltas_layer) * eta
             delta_weights += momentum
 
-            layers[i].weights += delta_weights.T
+            layers[i].weights += delta_weights.T - (2 * reg_term)
             layers[i].last_deltaW = delta_weights
 
-    def train(self, task, training_set, validation_set, epochs, eta, alpha, verbose):
+    def train(self, task, training_set, validation_set, epochs, eta, alpha, lambd, verbose):
         for epoch in range(epochs):
             if verbose:
                 time_start = time.clock()
@@ -94,7 +97,7 @@ class NeuralNet:
                 self.feedforward(training_input, task)
                 error_out = self.compute_delta(target_train)
                 epoch_error += np.sum(error_out)
-                self.update_weights(eta, alpha)
+                self.update_weights(eta, alpha, lambd)
                 guess = self.layer_list[-1].out
 
                 if task == "monk":
@@ -152,17 +155,15 @@ def mean_squared_error(target, output, derivative):
     else:
         res = np.subtract(target, output) ** 2
         res = np.sum(res, axis=0)
-        res = np.sum(res, axis=0)
         return res/len(output)
 
 
-# TODO CHECK HERE
-def mean_euclidean_error(target_value, neurons_out, deriv=False):
-    if deriv:
-        err = mean_euclidean_error(target_value, neurons_out)
-        return np.subtract(neurons_out, target_value) * (1 / err)
+# TODO: WHY does it (only) converge if we return - derivative ?
+def mean_euclidean_error(target_value, neurons_out, derivative):
+    if derivative:
+        err = mean_euclidean_error(target_value, neurons_out, derivative=False)
+        return - np.subtract(neurons_out, target_value) * (1 / err)
     res = np.subtract(neurons_out, target_value) ** 2
     res = np.sum(res, axis=0)
     res = np.sqrt(res)
-    res = np.sum(res, axis=0)
-    return (res / len(neurons_out))
+    return res / len(neurons_out)

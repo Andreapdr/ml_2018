@@ -10,7 +10,6 @@ class Layer:
         self.bias_W = np.random.uniform(low=-0.20, high=0.20, size=[n_neurons])
         self.delta = np.zeros(n_neurons)
         self.activation = None
-        self.error = None
         self.set_activation(activation)
         self.last_deltaW = 0
 

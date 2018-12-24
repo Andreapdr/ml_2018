@@ -7,7 +7,7 @@ import time
     alpha = Momentum
     step_decay = value multiplying learning rate every 20 epochs - should be lower than 1 """
 
-# TODO: REGULARIZATION and step decay again
+# TODO: check REGULARIZATION and implement STEP (LR) DECAY
 
 """ Simply run the model on monk dataset (no kfold)"""
 def run_monk():
@@ -25,8 +25,9 @@ def run_monk():
     task = "monk"
     eta = 0.3
     alpha = 0.2
+    lambd = 0.00
     epochs = 75
-    nn.train(task, training_set, validation_set, epochs, eta, alpha, True)
+    nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, True)
     horror_plot(nn, eta, 0)
 
 
@@ -37,7 +38,7 @@ def run_cup():
     training_set = get_dataset(training_cup)
     validation_set = get_dataset(training_cup)
 
-    nn = NeuralNet("mean_squared_error")
+    nn = NeuralNet("mean_euclidean_error")
     nn.init_input_layer(10)
     nn.init_layer(23, 10, "tanh")
     nn.init_layer(23, 23, "tanh")
@@ -47,8 +48,9 @@ def run_cup():
     task = "cup"
     eta = 0.003
     alpha = 0.3
-    epochs = 100
-    nn.train(task, training_set, validation_set, epochs, eta, alpha, True)
+    lambd = 0.01
+    epochs = 150
+    nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, True)
     horror_plot(nn, eta, 0)
 
 
@@ -78,6 +80,7 @@ def run_monk_folded(train_set, val_set):
     task = "monk"
     eta = 0.3
     alpha = 0.2
+    lambd = 0.00
     epochs = 100
     nn.train(task, training_set, validation_set, epochs, eta, alpha, False)
     return nn
@@ -97,6 +100,7 @@ def run_cup_folded(train_set, val_set):
     task = "cup"
     eta = 0.3
     alpha = 0.2
+    lambd = 0.01
     epochs = 100
     nn.train(task, training_set, validation_set, epochs, eta, alpha, False)
     return nn
@@ -107,6 +111,7 @@ def run_model_cup_kfold():
     epochs = None
     eta = None
     alpha = None
+    lambd = None
     verbose = None
     grid_search = None
 
@@ -141,10 +146,12 @@ def run_grid_search():
     epochs = None
     eta_gs = [0.1, 0.2, 0.3]
     alpha_gs = [0.1, 0.2, 0.3]
+    lambd_gs = [0.01, 0.02, 0.03]
 
     hp = list()
     hp.append(eta_gs)
     hp.append(alpha_gs)
+    hp.append(lambd_gs)
 
     total_time_elapsed = 0
     best_error = 1000
@@ -173,4 +180,4 @@ def run_grid_search():
 
 
 if __name__ == "__main__":
-    run_monk()
+    run_cup()
