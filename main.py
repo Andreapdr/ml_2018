@@ -1,4 +1,4 @@
-from neuralNetwork import NeuralNet
+from neuralNetwork import NeuralNet, init_manger
 from utils import get_dataset, horror_plot, horror_plot2, k_fold
 import itertools
 import time
@@ -31,7 +31,7 @@ def run_monk():
     horror_plot(nn, eta, 0)
 
 
-""" Simply run the model on cup dataset (no kfold"""
+""" Simply run the model on cup dataset (no kfold)"""
 def run_cup():
     training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
 
@@ -42,14 +42,13 @@ def run_cup():
     nn.init_input_layer(10)
     nn.init_layer(23, 10, "tanh")
     nn.init_layer(23, 23, "tanh")
-    nn.init_layer(23, 23, "tanh")
     nn.init_layer(2, 23, "linear")
 
     task = "cup"
-    eta = 0.003
-    alpha = 0.3
-    lambd = 0.01
-    epochs = 150
+    eta = 0.01
+    alpha = 0.80
+    lambd = 0.00
+    epochs = 250
     nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, True)
     horror_plot(nn, eta, 0)
 
@@ -98,7 +97,7 @@ def run_cup_folded(train_set, val_set):
     validation_set = val_set
 
     task = "cup"
-    eta = 0.3
+    eta = 0.003
     alpha = 0.2
     lambd = 0.01
     epochs = 100
@@ -107,77 +106,148 @@ def run_cup_folded(train_set, val_set):
 
 
 def run_model_cup_kfold():
-    task = None
-    epochs = None
-    eta = None
-    alpha = None
-    lambd = None
-    verbose = None
-    grid_search = None
+    task = "cup"
+    eta = 0.001
+    alpha = 0.3
+    lambd = 0.001
+    eta_decay = 0.2
+    epochs = 250
+    verbose = True
 
     training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
-    folds = 5
+    folds = 1
     train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
     nn_to_plot = []
-    sum_val_error = 0.0
     for i in (range(len(train_folded))):
-        nn = NeuralNet("mean_squared_error")  # initializing network
-        nn.init_input_layer(10)  # initializing input layer
+        # initializing network
+        nn = NeuralNet("mean_euclidean_error")
+
+        # initializing input layer
+        nn.init_input_layer(10)
 
         # adding layers
-        nn.init_layer(3, 10, "sigmoid")
-        nn.init_layer(3, 3, "sigmoid")
-        nn.init_layer(2, 3, "sigmoid")
+        nn.init_layer(20, 10, "sigmoid")
+        nn.init_layer(20, 20, "sigmoid")
+        nn.init_layer(20, 20, "sigmoid")
+        nn.init_layer(20, 20, "sigmoid")
+        nn.init_layer(2, 20, "linear")
+
+        # setting weights xavier init
+        nn.set_weights_pre_training()
 
         tr = train_folded[i]
         tval = val_folded[i]
 
-        nn.train(task, tr, tval, epochs, eta, alpha, verbose)
-        nn_to_plot.append(nn)  # add neural network to an array to be plotted
-        sum_val_error += nn.validation_error_list[-1][1]
+        nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose)
+        nn_to_plot.append(nn)
 
-    if grid_search:
-        mean_val_error = sum_val_error / folds
-        return mean_val_error
-    horror_plot2(nn_to_plot, eta, 0)  # screening
+        print(f"KFOLD {i+1} of {folds} _______________________________________")
+
+    horror_plot2(nn_to_plot, eta, alpha, lambd, folds, "5L*20N: sigmoid")
 
 
+""" we should run a complete grid search for every network 
+    architecture (hidden_layers/neuron per layer) we want to check...
+    n_input: the number of attributes in a given dataset
+    n_neurons_layer: the number of neurons for each hidden layer (assuming fully connected architecture)
+    n_hidden_layers: the number of hidden layers contained in the network
+    n_output_neurons: the number of output neurons """
 def run_grid_search():
-    epochs = None
-    eta_gs = [0.1, 0.2, 0.3]
-    alpha_gs = [0.1, 0.2, 0.3]
-    lambd_gs = [0.01, 0.02, 0.03]
+    epochs = 50
+    n_input = [10]
+    n_neurons_layer = [5, 10, 20, 40]
+    n_hidden_layers = [2, 3, 4, 5]
+    n_output_neurons = [2]
 
-    hp = list()
-    hp.append(eta_gs)
-    hp.append(alpha_gs)
-    hp.append(lambd_gs)
+    act_function_hidden = ["sigmoid", "tanh"]
+    act_function_output = ["linear"]
+    error_function = ["mean_euclidean_error"]
+
+    eta_swallow_gs = [0.3]
+    alpha_swallow_gs = [0.3]
+    lambd_swallow_gs = [0.01]
+
+    eta_deep_gs = [0.00001, 0.0001, 0.001, 0.01, 0.1]
+    alpha_deep_gs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    lambd_deep_gs = [0.0001, 0.001, 0.01]
+
+    hp_architecture = [n_hidden_layers, n_neurons_layer, n_input, n_output_neurons, error_function, act_function_hidden, act_function_output]
+    hp_hyperparam = [eta_swallow_gs, alpha_swallow_gs, lambd_swallow_gs]
 
     total_time_elapsed = 0
     best_error = 1000
     best_combination = [1, 1, 1]
 
-    for combination in itertools.product(*hp):
-        lr = combination[0]
-        alpha = combination[1]
+    for j, architecture in enumerate(itertools.product(*hp_architecture)):
+        for comb in itertools.product(*hp_hyperparam):
+            print(*architecture)
+            task = "cup"
+            eta = eta_swallow_gs[0]
+            alpha = alpha_swallow_gs[0]
+            lambd = lambd_swallow_gs[0]
+            verbose = True
+            folds = 3
+            nn_to_plot = []
 
-        time_start = time.perf_counter()
+            training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+            train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
 
-        error = run_model_cup_kfold()
-        if error < best_error:
-            best_error = error
-            best_combination = combination
-        time_elapsed = time.perf_counter() - time_start
-        total_time_elapsed += time_elapsed
-        time_elapsed = round(time_elapsed, 3)
-        print(
-            f"Time elapsed for combination lr = {lr}, alpha = {alpha}: {time_elapsed}s\n"
-            f"Final error: {error}\n")
-    print(f"Total time elapsed for grid search with {epochs} epochs: {round(total_time_elapsed, 3)}s\n"
-          f"Best combination of hyperparameters: lr = {best_combination[0]}, "
-          f"alpha = {best_combination[1]}\n"
-          f"with error = {best_error}")
+            for i in range(len(train_folded)):
+                nn = init_manger(*architecture)
+                tr = train_folded[i]
+                tval = val_folded[i]
+                nn.train(task, tr, tval, epochs, eta, alpha, lambd, verbose)
+                nn_to_plot.append(nn)
+                print(f"KFOLD {i + 1} of {folds} _______________________________________")
+
+            horror_plot2(nn_to_plot, eta, alpha, folds, architecture)
+
+    # for combination in itertools.product(*hp):
+    #     lr = combination[0]
+    #     alpha = combination[1]
+    #
+    #     time_start = time.perf_counter()
+    #
+    #     error = run_model_cup_kfold()
+    #     if error < best_error:
+    #         best_error = error
+    #         best_combination = combination
+    #     time_elapsed = time.perf_counter() - time_start
+    #     total_time_elapsed += time_elapsed
+    #     time_elapsed = round(time_elapsed, 3)
+    #     print(
+    #         f"Time elapsed for combination lr = {lr}, alpha = {alpha}: {time_elapsed}s\n"
+    #         f"Final error: {error}\n")
+    # print(f"Total time elapsed for grid search with {epochs} epochs: {round(total_time_elapsed, 3)}s\n"
+    #       f"Best combination of hyperparameters: lr = {best_combination[0]}, "
+    #       f"alpha = {best_combination[1]}\n"
+    #       f"with error = {best_error}")
+
+
+def test_init_manager():
+    nn = init_manger(2, 5, 10, 2, "mean_euclidean_error", "tanh", "linear")
+    task = "cup"
+    eta = 0.001
+    alpha = 0.9
+    lambd = 0.01
+    epochs = 100
+    verbose = True
+    training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+    folds = 1
+    nn_to_plot = []
+
+    train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
+
+    for i in range(len(train_folded)):
+        tr = train_folded[i]
+        tval = val_folded[i]
+        nn.train(task, tr, tval, epochs, eta, alpha, lambd, verbose)
+        nn_to_plot.append(nn)
+        print(f"KFOLD {i + 1} of {folds} _______________________________________")
+
+    horror_plot2(nn_to_plot, eta, 0, folds, 0)
 
 
 if __name__ == "__main__":
-    run_cup()
+    # run_grid_search()
+    run_model_cup_kfold()

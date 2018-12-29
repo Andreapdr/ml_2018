@@ -67,90 +67,73 @@ def horror_plot(network, lr, momentum):
     plt.legend()
     plt.show()
 
-    # plt.title(f"Accuracy")
-    # acc_cord_x = list()
-    # acc_cord_y = list()
-    # acc_cord_x_test = list()
-    # acc_cord_y_test = list()
-    # for elem in network.accuracy_list:
-    #     acc_cord_x.append(elem[0])
-    #     acc_cord_y.append(elem[1])
-    # for elem in network.validation_accuracy_list:
-    #     acc_cord_x_test.append(elem[0])
-    #     acc_cord_y_test.append(elem[1])
-    # plt.plot(acc_cord_x, acc_cord_y, label="Accuracy Training")
-    # plt.plot(acc_cord_x_test, acc_cord_y_test, label="Accuracy Validation")
-    # plt.legend()
-    # plt.grid(True)
-    # plt.tight_layout()
-    # plt.show()
 
+def horror_plot2(network_list, lr, momentum, lambd, folds, architecture):
+    avg_error_list_x = [0] * len(network_list[0].error_list)
+    avg_error_list_y = [0] * len(network_list[0].error_list)
+    avg_val_error_list_x = [0] * len(network_list[0].error_list)
+    avg_val_error_list_y = [0] * len(network_list[0].error_list)
 
-def horror_plot2(network_list, lr, momentum):
     for index, network in enumerate(network_list):
-        plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
+        plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}, lambda: {lambd}, {architecture}")
         cord_x = list()
         cord_y = list()
-        cord_x_test = list()
-        cord_y_test = list()
+        cord_x_val = list()
+        cord_y_val = list()
         for elem in network.error_list:
             cord_x.append(elem[0])
             cord_y.append(elem[1])
         for elem in network.validation_error_list:
-            cord_x_test.append(elem[0])
-            cord_y_test.append(elem[1])
-        plt.plot(cord_x, cord_y, label=f"Error Rate Training {index+1}")
-        # plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation")
+            cord_x_val.append(elem[0])
+            cord_y_val.append(elem[1])
+
+        plt.plot(cord_x, cord_y, alpha=0.4)
+        plt.plot(cord_x_val, cord_y_val, alpha=0.4)
+
+        for i in range(len(cord_x)):
+            avg_error_list_x[i] = cord_x[i]
+            avg_error_list_y[i] += cord_y[i]
+            avg_val_error_list_x[i] = cord_x_val[i]
+            avg_val_error_list_y[i] += cord_y_val[i]
+
+        # plt.plot(cord_x, cord_y, alpha=0.3, label=f"Error Rate Training {index+1}")
+        # plt.plot(cord_x_test, cord_y_test, alpha=0.3, label="Error Rate Validation")
+
+    for i in range(len(avg_error_list_y)):
+        avg_error_list_y[i] = avg_error_list_y[i]/folds
+        avg_val_error_list_y[i] = avg_val_error_list_y[i]/folds
+
+    plt.plot(avg_error_list_x, avg_error_list_y, c="red", label="average error")
+    plt.plot(avg_val_error_list_x, avg_val_error_list_y, c="blue", label="average val", linestyle="--")
+
+    # plt.ylim(0, 4)
     plt.grid(True)
     plt.legend()
+    temp = str(architecture)
+    plt.savefig("/home/andrea/sviluppo/ml_2018/plots/" + temp + ".png")
     plt.show()
-
-    # plt.title(f"Accuracy")
-    # acc_cord_x = list()
-    # acc_cord_y = list()
-    # acc_cord_x_test = list()
-    # acc_cord_y_test = list()
-    # for elem in network.accuracy_list:
-    #     acc_cord_x.append(elem[0])
-    #     acc_cord_y.append(elem[1])
-    # for elem in network.validation_accuracy_list:
-    #     acc_cord_x_test.append(elem[0])
-    #     acc_cord_y_test.append(elem[1])
-    # plt.plot(acc_cord_x, acc_cord_y, label="Accuracy Training")
-    # plt.plot(acc_cord_x_test, acc_cord_y_test, label="Accuracy Validation")
-    # plt.legend()
-    # plt.grid(True)
-    # plt.tight_layout()
-    # plt.show()
 
 
 def k_fold(data, folding):
     if folding == 1:
-        len_training = len(data)//100 * 85
+        len_training = (len(data)//100) * 70
         training = data[:len_training]
         validation = data[len_training:]
         return [training], [validation]
     else:
         len_data = len(data)
         fold_len = len_data // folding
-        remainder = len_data % folding
         folded = []
         train = []
         validation = []
         t = 0
         for i in range(fold_len, len_data, fold_len):
-            if i == fold_len * (folding):
+            if i == fold_len * folding:
                 folded.append(data[t:])
                 t = i
             else:
                 folded.append(data[t:i])
                 t = i
-            # if i == fold_len:
-            #     folded.append(data[t:i])
-            #     t = i
-            # else:
-            #     folded.append(data[t:i])
-            #     t = i
         for i in range(len(folded)):
             temp_folded = folded.copy()
             temp_folded.pop(i)
