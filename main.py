@@ -7,7 +7,6 @@ import time
     alpha = Momentum
     step_decay = value multiplying learning rate every 20 epochs - should be lower than 1 """
 
-# TODO: check REGULARIZATION and implement STEP (LR) DECAY
 
 """ Simply run the model on monk dataset (no kfold)"""
 def run_monk():
@@ -63,7 +62,7 @@ def run_kfold():
         model = run_monk_folded(train_folded[i], val_folded[i])
         nn_to_plot.append(model)
 
-    """LR nel plot settato manualmente al momento... (0.3)"""
+    # NB: ATM eta (in the plot title) is manually set to 0.3
     horror_plot2(nn_to_plot, 0.3, 0)
 
 

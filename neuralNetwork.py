@@ -32,7 +32,6 @@ class NeuralNet:
     def set_weights_pre_training(self):
         layer_list = self.layer_list
         for i in range(1, len(layer_list)):
-            temp_shape = layer_list[i-1].out.shape
             n_in = int(layer_list[i-1].out.shape[0])
             desired_var = 2/n_in
             layer_list[i].set_weights_xavier(desired_var)
@@ -166,7 +165,7 @@ def mean_squared_error(target, output, derivative):
         return res/len(output)
 
 
-# TODO: WHY does it (only) converge if we return - derivative ?
+# TODO: converging if we return minus derivative (???)
 def mean_euclidean_error(target_value, neurons_out, derivative):
     if derivative:
         err = mean_euclidean_error(target_value, neurons_out, derivative=False)
