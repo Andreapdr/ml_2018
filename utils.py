@@ -49,7 +49,49 @@ def get_dataset(name_csv):
     return dataset_np
 
 
-def horror_plot(network, lr, momentum):
+def simple_plot(task, network, lr, momentum):
+    plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
+    cord_x = list()
+    cord_y = list()
+    cord_x_test = list()
+    cord_y_test = list()
+    for elem in network.error_list:
+        cord_x.append(elem[0])
+        cord_y.append(elem[1])
+    for elem in network.validation_error_list:
+        cord_x_test.append(elem[0])
+        cord_y_test.append(elem[1])
+    plt.plot(cord_x, cord_y, label=f"Error Rate Training")
+    plt.plot(cord_x_test, cord_y_test, label="Error Rate Validation", linestyle="--")
+    plt.xlabel("Epochs")
+    plt.ylabel("Error")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    if task == "monk":
+        plt.title(f"Accuracy Plot \nlr: {lr}, momentum: {momentum}")
+        cord_x_acc = list()
+        cord_y_acc = list()
+        cord_x_acc_valid = list()
+        cord_y_acc_valid = list()
+        for elem in network.accuracy_list:
+            cord_x_acc.append(elem[0])
+            cord_y_acc.append(elem[1])
+        for elem in network.validation_accuracy_list:
+            cord_x_acc_valid.append(elem[0])
+            cord_y_acc_valid.append(elem[1])
+        plt.plot(cord_x_acc, cord_y_acc, label="Accuracy on training")
+        plt.plot(cord_x_acc_valid, cord_y_acc_valid, label="Accuracy on test", linestyle="--")
+        plt.xlabel("Epochs")
+        plt.ylabel("Error")
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+
+
+
+def simple_plot_test(network, lr, momentum):
     plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
     cord_x = list()
     cord_y = list()
@@ -67,8 +109,22 @@ def horror_plot(network, lr, momentum):
     plt.legend()
     plt.show()
 
+    plt.title(f"Accuracy Plot \nlr: {lr}, momentum: {momentum}")
+    cord_x_acc = list()
+    cord_y_acc = list()
+    cord_x_acc_valid = list()
+    cord_y_acc_valid = list()
+    for elem in network.accuracy_list:
+        cord_x_acc.append(elem[0])
+        cord_y_acc.append(elem[1])
+    for elem in network.validation_accuracy_list:
+        cord_x_acc_valid.append(elem[0])
+        cord_y_acc_valid.append(elem[1])
+    plt.plot(cord_x_acc, cord_y_acc, label="Accuracy on training")
+    plt.plot(cord_x_acc_valid, cord_y_acc_valid, label="Accuracy on test")
 
-def horror_plot2(network_list, lr, momentum, lambd, folds, architecture):
+
+def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
     avg_error_list_x = [0] * len(network_list[0].error_list)
     avg_error_list_y = [0] * len(network_list[0].error_list)
     avg_val_error_list_x = [0] * len(network_list[0].error_list)
@@ -87,9 +143,6 @@ def horror_plot2(network_list, lr, momentum, lambd, folds, architecture):
             cord_x_val.append(elem[0])
             cord_y_val.append(elem[1])
 
-        plt.plot(cord_x, cord_y, alpha=0.4)
-        plt.plot(cord_x_val, cord_y_val, alpha=0.4)
-
         for i in range(len(cord_x)):
             avg_error_list_x[i] = cord_x[i]
             avg_error_list_y[i] += cord_y[i]
@@ -97,16 +150,15 @@ def horror_plot2(network_list, lr, momentum, lambd, folds, architecture):
             avg_val_error_list_y[i] += cord_y_val[i]
 
         # plt.plot(cord_x, cord_y, alpha=0.3, label=f"Error Rate Training {index+1}")
-        # plt.plot(cord_x_test, cord_y_test, alpha=0.3, label="Error Rate Validation")
+        # plt.plot(cord_x_val, cord_y_val, alpha=0.3, label="Error Rate Validation")
 
     for i in range(len(avg_error_list_y)):
         avg_error_list_y[i] = avg_error_list_y[i]/folds
         avg_val_error_list_y[i] = avg_val_error_list_y[i]/folds
 
-    plt.plot(avg_error_list_x, avg_error_list_y, c="red", label="average error")
-    plt.plot(avg_val_error_list_x, avg_val_error_list_y, c="blue", label="average val", linestyle="--")
+    plt.plot(avg_error_list_x, avg_error_list_y, c="red", label="Average TR")
+    plt.plot(avg_val_error_list_x, avg_val_error_list_y, c="blue", label="Average VAL", linestyle="--")
 
-    # plt.ylim(0, 4)
     plt.grid(True)
     plt.legend()
     temp = str(architecture)

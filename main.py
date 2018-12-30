@@ -1,7 +1,6 @@
 from neuralNetwork import NeuralNet, init_manger
-from utils import get_dataset, horror_plot, horror_plot2, k_fold
+from utils import get_dataset, simple_plot, simple_plot_test, plot_multinetwork, k_fold
 import itertools
-import time
 
 """ lr = Learning Rate,
     alpha = Momentum
@@ -15,24 +14,27 @@ def run_monk():
     nn.init_layer(3, 17, "sigmoid")
     nn.init_layer(1, 3, "sigmoid")
 
-    train_csv_one_hot = "dataset/monk2/monk2train_onehot.csv"
-    test_csv_one_hot = "dataset/monk2/monk2test_onehot.csv"
+    train_csv_one_hot = "dataset/monk3/monk3train_onehot.csv"
+    test_csv_one_hot = "dataset/monk3/monk3test_onehot.csv"
 
     training_set = get_dataset(train_csv_one_hot)
     validation_set = get_dataset(test_csv_one_hot)
 
     task = "monk"
     eta = 0.3
-    alpha = 0.2
+    alpha = 0.6
     lambd = 0.00
-    epochs = 75
-    nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, True)
-    horror_plot(nn, eta, 0)
+    eta_decay = 0.00
+    epochs = 150
+    nn.set_weights_pre_training()
+    nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, eta_decay, True)
+
+    simple_plot(task, nn, eta, alpha)
 
 
 """ Simply run the model on cup dataset (no kfold)"""
 def run_cup():
-    training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+    training_cup = "dataset/blindcup/training_set.csv"
 
     training_set = get_dataset(training_cup)
     validation_set = get_dataset(training_cup)
@@ -49,13 +51,13 @@ def run_cup():
     lambd = 0.00
     epochs = 250
     nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, True)
-    horror_plot(nn, eta, 0)
+    simple_plot(task, nn, eta, 0)
 
 
 """ Run kfold validation on given dataset - then call for every folding run_cup_folded/run_monk_folded"""
-def run_kfold():
+def run_kfold_monk():
     training_set = "dataset/monk2/monk2train_onehot.csv"
-    folds = 5
+    folds = 4
     train_folded, val_folded = k_fold(get_dataset(training_set), folds)
     nn_to_plot = []
     for i in range(len(train_folded)):
@@ -63,25 +65,7 @@ def run_kfold():
         nn_to_plot.append(model)
 
     # NB: ATM eta (in the plot title) is manually set to 0.3
-    horror_plot2(nn_to_plot, 0.3, 0)
-
-
-def run_monk_folded(train_set, val_set):
-    nn = NeuralNet("mean_squared_error")
-    nn.init_input_layer(17)
-    nn.init_layer(3, 17, "sigmoid")
-    nn.init_layer(1, 3, "sigmoid")
-
-    training_set = train_set
-    validation_set = val_set
-
-    task = "monk"
-    eta = 0.3
-    alpha = 0.2
-    lambd = 0.00
-    epochs = 100
-    nn.train(task, training_set, validation_set, epochs, eta, alpha, False)
-    return nn
+    plot_multinetwork(nn_to_plot, 0.3, 0)
 
 
 def run_cup_folded(train_set, val_set):
@@ -104,20 +88,60 @@ def run_cup_folded(train_set, val_set):
     return nn
 
 
+def run_monk_folded():
+    task = "monk"
+    eta = 0.3
+    alpha = 0.2
+    lambd = 0.00
+    eta_decay = 0.0
+    epochs = 250
+    verbose = True
+
+    training_set = "dataset/monk2/monk2train_onehot.csv"
+    test_set = get_dataset("dataset/monk2/monk2test_onehot.csv")
+    folds = 1
+    train_folded, val_folded = k_fold(get_dataset(training_set), folds)
+    nn_to_plot = []
+    for i in range(len(train_folded)):
+        nn = NeuralNet("mean_squared_error")
+        nn.init_input_layer(17)
+        nn.init_layer(3, 17, "sigmoid")
+        nn.init_layer(1, 3, "sigmoid")
+
+        tr = train_folded[i]
+        tval = val_folded[i]
+
+        nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose)
+        nn_to_plot.append(nn)
+
+        print(f"KFOLD {i + 1} of {folds} _______________________________________")
+
+    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, "monk")
+
+    # tr_f = get_dataset(training_set)
+    # ts_f = get_dataset(test_set)
+    # nn = NeuralNet("mean_squared_error")
+    # nn.init_input_layer(17)
+    # nn.init_layer(3, 17, "sigmoid")
+    # nn.init_layer(1, 3, "sigmoid")
+    # # Training on whole training_set and "validating" on test_set
+    # nn.train(task, tr_f, ts_f, epochs, eta, alpha, lambd, eta_decay, verbose)
+    # simple_plot_test(nn, eta, alpha)
+
 def run_model_cup_kfold():
     task = "cup"
-    eta = 0.001
-    alpha = 0.3
+    eta = 0.01
+    alpha = 0.1
     lambd = 0.001
     eta_decay = 0.2
     epochs = 250
     verbose = True
 
-    training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+    training_cup = "dataset/blindcup/training_set.csv"
     folds = 1
     train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
     nn_to_plot = []
-    for i in (range(len(train_folded))):
+    for i in range(len(train_folded)):
         # initializing network
         nn = NeuralNet("mean_euclidean_error")
 
@@ -125,10 +149,10 @@ def run_model_cup_kfold():
         nn.init_input_layer(10)
 
         # adding layers
-        nn.init_layer(20, 10, "sigmoid")
-        nn.init_layer(20, 20, "sigmoid")
-        nn.init_layer(20, 20, "sigmoid")
-        nn.init_layer(20, 20, "sigmoid")
+        nn.init_layer(20, 10, "tanh")
+        nn.init_layer(20, 20, "tanh")
+        nn.init_layer(20, 20, "tanh")
+        nn.init_layer(20, 20, "tanh")
         nn.init_layer(2, 20, "linear")
 
         # setting weights xavier init
@@ -142,7 +166,7 @@ def run_model_cup_kfold():
 
         print(f"KFOLD {i+1} of {folds} _______________________________________")
 
-    horror_plot2(nn_to_plot, eta, alpha, lambd, folds, "5L*20N: sigmoid")
+    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, "5L*20N: tanh")
 
 
 """ we should run a complete grid search for every network 
@@ -188,7 +212,7 @@ def run_grid_search():
             folds = 3
             nn_to_plot = []
 
-            training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+            training_cup = "dataset/blindcup/training_set.csv"
             train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
 
             for i in range(len(train_folded)):
@@ -199,7 +223,7 @@ def run_grid_search():
                 nn_to_plot.append(nn)
                 print(f"KFOLD {i + 1} of {folds} _______________________________________")
 
-            horror_plot2(nn_to_plot, eta, alpha, folds, architecture)
+            plot_multinetwork(nn_to_plot, eta, alpha, folds, architecture)
 
     # for combination in itertools.product(*hp):
     #     lr = combination[0]
@@ -231,7 +255,7 @@ def test_init_manager():
     lambd = 0.01
     epochs = 100
     verbose = True
-    training_cup = "dataset/blindcup/LOC-OSM2-TR.csv"
+    training_cup = "dataset/blindcup/training_set.csv"
     folds = 1
     nn_to_plot = []
 
@@ -244,9 +268,11 @@ def test_init_manager():
         nn_to_plot.append(nn)
         print(f"KFOLD {i + 1} of {folds} _______________________________________")
 
-    horror_plot2(nn_to_plot, eta, 0, folds, 0)
+    plot_multinetwork(nn_to_plot, eta, 0, folds, 0)
 
 
 if __name__ == "__main__":
     # run_grid_search()
-    run_model_cup_kfold()
+    # run_model_cup_kfold()
+    # run_monk_folded()
+    run_monk()
