@@ -84,7 +84,7 @@ def simple_plot(task, network, lr, momentum):
         plt.plot(cord_x_acc, cord_y_acc, label="Accuracy on training")
         plt.plot(cord_x_acc_valid, cord_y_acc_valid, label="Accuracy on test", linestyle="--")
         plt.xlabel("Epochs")
-        plt.ylabel("Error")
+        plt.ylabel("Accuracy")
         plt.grid(True)
         plt.legend()
         plt.show()
