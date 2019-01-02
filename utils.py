@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 
 def from_text_to_csv(text_path, csv_path):
@@ -90,7 +91,6 @@ def simple_plot(task, network, lr, momentum):
         plt.show()
 
 
-
 def simple_plot_test(network, lr, momentum):
     plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}")
     cord_x = list()
@@ -130,8 +130,12 @@ def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
     avg_val_error_list_x = [0] * len(network_list[0].error_list)
     avg_val_error_list_y = [0] * len(network_list[0].error_list)
 
+    arch = architecture
+    timestamp = datetime.now()
+    id_plot = timestamp.hour, timestamp.minute, timestamp.second
+    to_print = f"{arch[0]}hL*{arch[1]}N - {arch[5]}"
     for index, network in enumerate(network_list):
-        plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}, lambda: {lambd}, {architecture}")
+        plt.title(f"Error Function Plot \nlr: {lr}, momentum: {momentum}, lambda: {lambd}, {to_print}")
         cord_x = list()
         cord_y = list()
         cord_x_val = list()
@@ -149,8 +153,8 @@ def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
             avg_val_error_list_x[i] = cord_x_val[i]
             avg_val_error_list_y[i] += cord_y_val[i]
 
-        # plt.plot(cord_x, cord_y, alpha=0.3, label=f"Error Rate Training {index+1}")
-        # plt.plot(cord_x_val, cord_y_val, alpha=0.3, label="Error Rate Validation")
+        plt.plot(cord_x, cord_y, alpha=0.3, c="red", label=f"Error Rate Training")
+        plt.plot(cord_x_val, cord_y_val, alpha=0.3, c="blue", label="Error Rate Validation")
 
     for i in range(len(avg_error_list_y)):
         avg_error_list_y[i] = avg_error_list_y[i]/folds
@@ -158,17 +162,19 @@ def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
 
     plt.plot(avg_error_list_x, avg_error_list_y, c="red", label="Average TR")
     plt.plot(avg_val_error_list_x, avg_val_error_list_y, c="blue", label="Average VAL", linestyle="--")
+    # plt.plot(avg_val_error_list_x, avg_val_error_list_y, c="blue", label="Average VAL")
 
     plt.grid(True)
     plt.legend()
-    temp = str(architecture)
-    plt.savefig("/home/andrea/sviluppo/ml_2018/plots/" + temp + ".png")
+    temp = str(to_print)
+    temp2 = str(id_plot[0]) + "_" + str(id_plot[1]) + "_" + str(id_plot[2])
+    plt.savefig("/home/andrea/sviluppo/ml_2018/plots/" + temp + temp2 + ".png")
     plt.show()
 
 
 def k_fold(data, folding):
     if folding == 1:
-        len_training = (len(data)//100) * 70
+        len_training = (len(data)//100) * 85
         training = data[:len_training]
         validation = data[len_training:]
         return [training], [validation]
@@ -186,12 +192,12 @@ def k_fold(data, folding):
             else:
                 folded.append(data[t:i])
                 t = i
-        for i in range(len(folded)):
+        for j in range(len(folded)):
             temp_folded = folded.copy()
-            temp_folded.pop(i)
+            temp_folded.pop(j)
             temp_train = np.vstack(temp_folded)
             train.append(temp_train)
-            validation.append(folded[i])
+            validation.append(folded[j])
         return train, validation
 
 # from_text_to_csv("dataset/monk3/monk3test.txt", "dataset/monk3//monk3test.csv")
