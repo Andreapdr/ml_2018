@@ -183,32 +183,23 @@ def run_model_cup_kfold():
     n_hidden_layers: the number of hidden layers contained in the network
     n_output_neurons: the number of output neurons """
 def run_grid_search():
-    epochs = 75
+    epochs = 15
     n_input = [10]
-    n_neurons_layer = [6, 8, 10, 20, 40]
-    n_hidden_layers = [1, 2, 3, 4]
+    n_neurons_layer = [6, 10, 40]
+    n_hidden_layers = [1, 2, 3]
     n_output_neurons = [2]
 
     act_function_hidden = ["tanh"]
     act_function_output = ["linear"]
     error_function = ["mean_euclidean_error"]
 
-    eta_swallow_gs = [0.3]
-    alpha_swallow_gs = [0.3]
-    lambd_swallow_gs = [0.01]
-
     eta_deep_gs = [0.0001, 0.001, 0.01, 0.1]
-    # alpha_deep_gs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     alpha_deep_gs = [0.2, 0.4, 0.6, 0.8]
     lambd_deep_gs = [0.0001, 0.001, 0.01]
 
     hp_architecture = [n_hidden_layers, n_neurons_layer, n_input, n_output_neurons, error_function,
                        act_function_hidden, act_function_output]
     hp_hyperparam = [eta_deep_gs, alpha_deep_gs, lambd_deep_gs]
-
-    total_time_elapsed = 0
-    best_error = 1000
-    best_combination = [1, 1, 1]
 
     for j, architecture in enumerate(itertools.product(*hp_architecture)):
         print(f"Architecture "
@@ -250,30 +241,6 @@ def run_grid_search():
                   f"\nHyperparameters: eta: {eta}, alpha: {alpha}, lambda: {lambd}, eta decay: {eta_decay}"
                   f"\nAverage final error on training set: {error_kfold_tr}"
                   f"\nAverage final error on validat. set: {error_kfold_val}\n")
-
-
-
-
-    # for combination in itertools.product(*hp):
-    #     lr = combination[0]
-    #     alpha = combination[1]
-    #
-    #     time_start = time.perf_counter()
-    #
-    #     error = run_model_cup_kfold()
-    #     if error < best_error:
-    #         best_error = error
-    #         best_combination = combination
-    #     time_elapsed = time.perf_counter() - time_start
-    #     total_time_elapsed += time_elapsed
-    #     time_elapsed = round(time_elapsed, 3)
-    #     print(
-    #         f"Time elapsed for combination lr = {lr}, alpha = {alpha}: {time_elapsed}s\n"
-    #         f"Final error: {error}\n")
-    # print(f"Total time elapsed for grid search with {epochs} epochs: {round(total_time_elapsed, 3)}s\n"
-    #       f"Best combination of hyperparameters: lr = {best_combination[0]}, "
-    #       f"alpha = {best_combination[1]}\n"
-    #       f"with error = {best_error}")
 
 
 def test_init_manager():

@@ -153,8 +153,8 @@ def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
             avg_val_error_list_x[i] = cord_x_val[i]
             avg_val_error_list_y[i] += cord_y_val[i]
 
-        plt.plot(cord_x, cord_y, alpha=0.3, c="red", label=f"Error Rate Training")
-        plt.plot(cord_x_val, cord_y_val, alpha=0.3, c="blue", label="Error Rate Validation")
+        plt.plot(cord_x, cord_y, alpha=0.7, c="orange")
+        plt.plot(cord_x_val, cord_y_val, alpha=0.7, c="skyblue")
 
     for i in range(len(avg_error_list_y)):
         avg_error_list_y[i] = avg_error_list_y[i]/folds
@@ -168,7 +168,7 @@ def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
     plt.legend()
     temp = str(to_print)
     temp2 = str(id_plot[0]) + "_" + str(id_plot[1]) + "_" + str(id_plot[2])
-    # plt.savefig("/home/andrea/sviluppo/ml_2018/plots/" + temp + temp2 + ".png")
+    plt.savefig("plots/" + temp + temp2 + ".png")
     plt.show()
 
 

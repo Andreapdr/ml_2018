@@ -26,6 +26,14 @@ class Layer:
         self.weights = np.random.uniform(low=-desired_var, high=desired_var, size=np.shape(self.weights))
         self.bias_W = np.random.uniform(low=-desired_var, high=desired_var, size=np.shape(self.bias_W))
 
+    # TODO: funzione per salvare i pesi di ogni layer
+    def save_weights(self, output_file):
+        pass
+
+    # TODO: funzione per settare i pesi salvati da funzione save_weights
+    def load_weights(self, input_file):
+        pass
+
     def set_activation(self, activation):
         if activation == "sigmoid":
             self.activation = sigmoid_function

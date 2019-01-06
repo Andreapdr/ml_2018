@@ -186,11 +186,10 @@ def mean_squared_error(target, output, derivative):
         return res / len(output)
 
 
-# TODO: converging if we return minus derivative (???)
 def mean_euclidean_error(target_value, neurons_out, derivative):
     if derivative:
         err = mean_euclidean_error(target_value, neurons_out, derivative=False)
-        return - np.subtract(neurons_out, target_value) * (1 / err)
+        return np.subtract(target_value, neurons_out) * (1 / err)
     res = np.subtract(neurons_out, target_value) ** 2
     res = np.sum(res, axis=0)
     res = np.sqrt(res)
