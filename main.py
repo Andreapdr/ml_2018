@@ -202,7 +202,8 @@ def run_grid_search():
     alpha_deep_gs = [0.2, 0.4, 0.6, 0.8]
     lambd_deep_gs = [0.0001, 0.001, 0.01]
 
-    hp_architecture = [n_hidden_layers, n_neurons_layer, n_input, n_output_neurons, error_function, act_function_hidden, act_function_output]
+    hp_architecture = [n_hidden_layers, n_neurons_layer, n_input, n_output_neurons, error_function,
+                       act_function_hidden, act_function_output]
     hp_hyperparam = [eta_deep_gs, alpha_deep_gs, lambd_deep_gs]
 
     total_time_elapsed = 0
@@ -210,8 +211,11 @@ def run_grid_search():
     best_combination = [1, 1, 1]
 
     for j, architecture in enumerate(itertools.product(*hp_architecture)):
+        print(f"Architecture "
+              f"{j + 1} of {len(list(itertools.product(*hp_architecture)))}\n")
         for i, comb in enumerate(itertools.product(*hp_hyperparam)):
-            # print(*architecture)
+            print(f"Combination of hyperparameters "
+                  f"{i + 1} of {len(list(itertools.product(*hp_hyperparam)))}\n")
             task = "cup"
             eta = comb[0]
             alpha = comb[1]
@@ -224,13 +228,13 @@ def run_grid_search():
             training_cup = "dataset/blindcup/training_set2.csv"
             train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
 
-            for i in range(len(train_folded)):
+            for k in range(len(train_folded)):
                 nn = init_manger(*architecture)
-                tr = train_folded[i]
-                tval = val_folded[i]
+                tr = train_folded[k]
+                tval = val_folded[k]
                 nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose)
                 nn_to_plot.append(nn)
-                print(f"KFOLD {i + 1} of {folds} _______________________________________")
+                #print(f"KFOLD {k + 1} of {folds} _______________________________________")
 
             plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, architecture)
 
@@ -245,7 +249,7 @@ def run_grid_search():
             print(f"NN Architecture: Layers: {len(nn_to_plot[0].layer_list)}, Units x layer: {len(nn_to_plot[0].layer_list[1].net)}"
                   f"\nHyperparameters: eta: {eta}, alpha: {alpha}, lambda: {lambd}, eta decay: {eta_decay}"
                   f"\nAverage final error on training set: {error_kfold_tr}"
-                  f"\nAverage final error on validat. set: {error_kfold_val}")
+                  f"\nAverage final error on validat. set: {error_kfold_val}\n")
 
 
 

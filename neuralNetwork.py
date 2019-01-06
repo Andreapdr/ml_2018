@@ -123,14 +123,15 @@ class NeuralNet:
                     print(f"\nAccuracy on Training:   {round(correct_pred / len(training_set), 5)}")
                 time_elapsed = round((time.clock() - time_start), 3)
                 print(f"Time elapsed for epoch {epoch + 1}: {time_elapsed}s")
-            # Last Epoch --> print Error
-            if epoch == epochs - 1 and verbose:
-                print(f"Final Results:\n"
-                      f"NN Architecture: Layers: {len(self.layer_list)}, Units x layer: {len(self.layer_list[1].net)}")
-                print(f"Total Error for Epoch on Training Set: {round(epoch_error / len(training_set), 5)}")
-                if task == "monk":
-                    print(f"\nAccuracy on Training:   {round(correct_pred / len(training_set), 5)}")
-                total_time_elapsed = round((time.clock() - total_time), 3)
+                # Last Epoch --> print Error
+                if epoch == epochs - 1:
+                    print(f"Final Results:\n"
+                          f"NN Architecture: Layers: {len(self.layer_list)}, "
+                          f"Units x layer: {len(self.layer_list[1].net)}")
+                    print(f"Total Error for Epoch on Training Set: {round(epoch_error / len(training_set), 5)}")
+                    if task == "monk":
+                        print(f"\nAccuracy on Training:   {round(correct_pred / len(training_set), 5)}")
+                    total_time_elapsed = round((time.clock() - total_time), 3)
             self.error_list.append((epoch + 1, round(epoch_error / len(training_set), 5)))
             self.accuracy_list.append((epoch + 1, round(correct_pred / len(training_set))))
             self.test(task, validation_set, epoch + 1, verbose, epochs)
