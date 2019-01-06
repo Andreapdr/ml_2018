@@ -168,7 +168,7 @@ def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
     plt.legend()
     temp = str(to_print)
     temp2 = str(id_plot[0]) + "_" + str(id_plot[1]) + "_" + str(id_plot[2])
-    plt.savefig("plots/" + temp + temp2 + ".png")
+    #plt.savefig("plots/" + temp + temp2 + ".png")
     plt.show()
 
 

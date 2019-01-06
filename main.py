@@ -183,30 +183,47 @@ def run_model_cup_kfold():
     n_hidden_layers: the number of hidden layers contained in the network
     n_output_neurons: the number of output neurons """
 def run_grid_search():
+    '''
+    training_cup_path = "dataset/blindcup/training_set2.csv"
+    training_cup = get_dataset(training_cup_path)
+    test_cup_path = "dataset/blindcup/test_set2.csv"
+    test_cup = get_dataset(test_cup_path)
+
+    final_nn = init_manger(1,10,10,2,"mean_euclidean_error", "tanh", "linear")
+    final_nn.train_final(training_cup, 100, 0.001, 0.2, 0.0001, 0.00, False)
+    final_nn.make_prediction(test_cup)
+    exit()
+    '''
+
     epochs = 15
     n_input = [10]
-    n_neurons_layer = [6, 10, 40]
-    n_hidden_layers = [1, 2, 3]
+    n_neurons_layer = [10]
+    n_hidden_layers = [1]
     n_output_neurons = [2]
 
     act_function_hidden = ["tanh"]
     act_function_output = ["linear"]
     error_function = ["mean_euclidean_error"]
 
-    eta_deep_gs = [0.0001, 0.001, 0.01, 0.1]
-    alpha_deep_gs = [0.2, 0.4, 0.6, 0.8]
-    lambd_deep_gs = [0.0001, 0.001, 0.01]
+    #eta_deep_gs = [0.0001, 0.001, 0.01, 0.1]
+    eta_deep_gs = [0.01]
+    #alpha_deep_gs = [0.2, 0.4, 0.6, 0.8]
+    alpha_deep_gs = [0.2]
+    #lambd_deep_gs = [0.0001, 0.001, 0.01]
+    lambd_deep_gs = [0.0001]
 
     hp_architecture = [n_hidden_layers, n_neurons_layer, n_input, n_output_neurons, error_function,
                        act_function_hidden, act_function_output]
     hp_hyperparam = [eta_deep_gs, alpha_deep_gs, lambd_deep_gs]
 
+    best_val = 100
+
     for j, architecture in enumerate(itertools.product(*hp_architecture)):
-        print(f"Architecture "
-              f"{j + 1} of {len(list(itertools.product(*hp_architecture)))}\n")
         for i, comb in enumerate(itertools.product(*hp_hyperparam)):
-            print(f"Combination of hyperparameters "
-                  f"{i + 1} of {len(list(itertools.product(*hp_hyperparam)))}\n")
+            print(f"Architecture "
+                  f"{j + 1} of {len(list(itertools.product(*hp_architecture)))} with "
+                  f"Combination of hyperparameters "
+                  f"{i + 1} of {len(list(itertools.product(*hp_hyperparam)))}____________________________\n")
             task = "cup"
             eta = comb[0]
             alpha = comb[1]
@@ -216,8 +233,9 @@ def run_grid_search():
             folds = 7
             nn_to_plot = []
 
-            training_cup = "dataset/blindcup/training_set2.csv"
-            train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
+            training_cup_path = "dataset/blindcup/training_set2.csv"
+            training_cup = get_dataset(training_cup_path)
+            train_folded, val_folded = k_fold(training_cup, folds)
 
             for k in range(len(train_folded)):
                 nn = init_manger(*architecture)
@@ -241,6 +259,21 @@ def run_grid_search():
                   f"\nHyperparameters: eta: {eta}, alpha: {alpha}, lambda: {lambd}, eta decay: {eta_decay}"
                   f"\nAverage final error on training set: {error_kfold_tr}"
                   f"\nAverage final error on validat. set: {error_kfold_val}\n")
+
+            if error_kfold_val < best_val:
+                best_val = error_kfold_val
+                best_comb = comb
+                best_arch = architecture
+
+    print(f"Best model with validation error: {best_val} has eta: {best_comb[0]}, alpha: {best_comb[1]}, lambd: {best_comb[2]}, "
+          f"# hidden layers: {best_arch[0]}, # units: {best_arch[1]}\n")
+
+    test_cup_path = "dataset/blindcup/test_set2.csv"
+    test_cup = get_dataset(test_cup_path)
+
+    final_nn = init_manger(*best_arch)
+    final_nn.train_final(training_cup, 100, best_comb[0], best_comb[1], best_comb[2], eta_decay, False)
+    final_nn.make_prediction(test_cup)
 
 
 def test_init_manager():

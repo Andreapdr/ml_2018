@@ -83,9 +83,9 @@ class NeuralNet:
             layers[i].last_deltaW = delta_weights
 
     def train(self, task, training_set, validation_set, epochs, eta, alpha, lambd, eta_decay, verbose):
+        total_time = time.clock()
         for epoch in range(epochs):
             time_start = time.clock()
-            total_time = time.clock()
             np.random.shuffle(training_set)
             epoch_error = 0
             correct_pred = 0
@@ -175,6 +175,43 @@ class NeuralNet:
             print(f"Total Error for Epoch on Validate Set: {round(total_error / len(validation_set), 5)}")
             if task == "monk":
                 print(f"\nAccuracy on Validation: {round(correct_pred / len(validation_set), 5)}")
+
+    def train_final(self, training_set, epochs, eta, alpha, lambd, eta_decay, verbose):
+        total_time = time.clock()
+        first = True
+        for epoch in range(epochs):
+            time_start = time.clock()
+            np.random.shuffle(training_set)
+            epoch_error = 0
+            if eta_decay and epoch != 0 and epoch % 25 == 0:
+                eta = eta - eta * eta_decay
+            if verbose:
+                print(f"\nEPOCH {epoch + 1} _______________________________________")
+            for training_data in training_set:
+                bound = len(training_data)
+                training_input = training_data[1:bound - 2]
+                target_train = training_data[bound - 2:]
+                self.feedforward(training_input, "cup")
+                error_out = self.compute_delta(target_train)
+                epoch_error += np.sum(error_out)
+                self.update_weights(eta, alpha, lambd)
+
+            time_elapsed = round((time.clock() - time_start), 3)
+            if verbose:
+                print(f"Time elapsed for epoch {epoch + 1}: {time_elapsed}s\n")
+            # Last Epoch --> print Error
+            if epoch == epochs - 1:
+                print(f"Training of final model completed.\n"
+                      f"NN Architecture: Layers: {len(self.layer_list)}, "
+                      f"Units x layer: {len(self.layer_list[1].net)}")
+                total_time_elapsed = round((time.clock() - total_time), 3)
+                print(f"Total time elapsed: {total_time_elapsed}s")
+
+    def make_prediction(self, test_set):
+        for i in range(len(test_set)):
+            bound = len(test_set[i])
+            test_in = test_set[i][1:bound]
+            self.feedforward(test_in, "cup")
 
 
 def mean_squared_error(target, output, derivative):
