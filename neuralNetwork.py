@@ -208,10 +208,21 @@ class NeuralNet:
                 print(f"Total time elapsed: {total_time_elapsed}s")
 
     def make_prediction(self, test_set):
+        first = True
         for i in range(len(test_set)):
             bound = len(test_set[i])
             test_in = test_set[i][1:bound]
             self.feedforward(test_in, "cup")
+            out1 = self.layer_list[-1].out[0]
+            out2 = self.layer_list[-1].out[1]
+            if first:
+                first = False
+                outputs = [[out1, out2]]
+            else:
+                outputs = np.append(outputs, [[out1, out2]], axis=0)
+        final_result = np.concatenate((test_set, outputs), axis=1)
+        final_result = np.asarray(final_result)
+        np.savetxt("results.csv", final_result, delimiter=",", fmt='%s')
 
 
 def mean_squared_error(target, output, derivative):
