@@ -138,14 +138,16 @@ def run_model_cup_kfold():
     alpha = 0.2
     lambd = 0.0001
     eta_decay = 0.000
-    epochs = 500
-    verbose = False
+    epochs = 50
+    verbose = True
     grid_search = False
 
     training_cup = "dataset/blindcup/training_set2.csv"
-    folds = 10
+    folds = 1
     train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
     nn_to_plot = []
+    # architecture --> hidden layer, nueroni x hidden, eta, alpha, lambd, act hidden layer
+    architecture = [1, 40, eta, alpha, lambd, "tanh"]
     for i in range(len(train_folded)):
         print(f"\nKFOLD {i + 1} of {folds} _______________________________________")
 
@@ -168,7 +170,7 @@ def run_model_cup_kfold():
         nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose, grid_search)
         nn_to_plot.append(nn)
 
-    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, "1hL*10N: tanh")
+    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, architecture)
 
     error_kfold_tr = 0
     error_kfold_val = 0
