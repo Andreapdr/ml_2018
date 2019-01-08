@@ -134,16 +134,16 @@ def run_monk_folded():
 
 def run_model_cup_kfold():
     task = "cup"
-    eta = 0.0005
+    eta = 0.0009
     alpha = 0.2
     lambd = 0.0001
     eta_decay = 0.000
-    epochs = 5
+    epochs = 500
     verbose = False
     grid_search = False
 
     training_cup = "dataset/blindcup/training_set2.csv"
-    folds = 3
+    folds = 10
     train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
     nn_to_plot = []
     for i in range(len(train_folded)):
@@ -156,8 +156,8 @@ def run_model_cup_kfold():
         nn.init_input_layer(10)
 
         # adding layers
-        nn.init_layer(10, 10, "tanh")
-        nn.init_layer(2, 10, "linear")
+        nn.init_layer(40, 10, "tanh")
+        nn.init_layer(2, 40, "linear")
 
         # setting weights xavier init
         nn.set_weights_pre_training()
@@ -178,7 +178,7 @@ def run_model_cup_kfold():
 
     error_kfold_tr = round(error_kfold_tr / len(train_folded), 5)
     error_kfold_val = round(error_kfold_val / len(train_folded), 5)
-    print(f"\nNN Architecture: Layers: {len(nn_to_plot[0].layer_list)}, Units x layer: {len(nn_to_plot[0].layer_list[1].net)}"
+    print(f"\nNN Architecture: Layers: {len(nn_to_plot[0].layer_list)}, Units x hidden layer: {len(nn_to_plot[0].layer_list[1].net)}"
           f"\nHyperparameters: eta: {eta}, alpha: {alpha}, lambda: {lambd}, eta decay: {eta_decay}"
           f"\nAverage final error on training set: {error_kfold_tr}"
           f"\nAverage final error on validat. set: {error_kfold_val}\n")
