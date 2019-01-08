@@ -82,10 +82,10 @@ class NeuralNet:
             layers[i].weights += delta_weights.T
             layers[i].last_deltaW = delta_weights
 
-    def train(self, task, training_set, validation_set, epochs, eta, alpha, lambd, eta_decay, verbose):
-        total_time = time.clock()
+    def train(self, task, training_set, validation_set, epochs, eta, alpha, lambd, eta_decay, verbose, grid_search):
         for epoch in range(epochs):
             time_start = time.clock()
+            total_time = time.clock()
             np.random.shuffle(training_set)
             epoch_error = 0
             correct_pred = 0
@@ -123,23 +123,25 @@ class NeuralNet:
                     print(f"\nAccuracy on Training:   {round(correct_pred / len(training_set), 5)}")
                 time_elapsed = round((time.clock() - time_start), 3)
                 print(f"Time elapsed for epoch {epoch + 1}: {time_elapsed}s")
-                # Last Epoch --> print Error
-                if epoch == epochs - 1:
-                    print(f"Final Results:\n"
-                          f"NN Architecture: Layers: {len(self.layer_list)}, "
-                          f"Units x layer: {len(self.layer_list[1].net)}")
-                    print(f"Total Error for Epoch on Training Set: {round(epoch_error / len(training_set), 5)}")
-                    if task == "monk":
-                        print(f"\nAccuracy on Training:   {round(correct_pred / len(training_set), 5)}")
-                    total_time_elapsed = round((time.clock() - total_time), 3)
+
+            # Last Epoch --> print Error
+            if epoch == epochs - 1 and grid_search == False:
+                print(f"Final Results:\n"
+                      f"NN Architecture: Layers: {len(self.layer_list)}, "
+                      f"Units x Hlayer: {len(self.layer_list[1].net)}")
+                print(f"Total Error for Epoch on Training Set: {round(epoch_error / len(training_set), 5)}")
+                if task == "monk":
+                    print(f"\nAccuracy on Training:   {round(correct_pred / len(training_set), 5)}")
+                total_time_elapsed = round((time.clock() - total_time), 3)
+
             self.error_list.append((epoch + 1, round(epoch_error / len(training_set), 5)))
             self.accuracy_list.append((epoch + 1, round(correct_pred / len(training_set))))
-            self.test(task, validation_set, epoch + 1, verbose, epochs)
+            self.test(task, validation_set, epoch + 1, verbose, epochs, grid_search)
             # Last Epoch --> print Total Time
             if epoch == epochs - 1 and verbose:
                 print(f"Total time elapsed: {total_time_elapsed}s")
 
-    def test(self, task, validation_set, relative_epoch, verbose, epochs):
+    def test(self, task, validation_set, relative_epoch, verbose, epochs, grid_search):
         total_error = 0
         correct_pred = 0
         np.random.shuffle(validation_set)
@@ -167,11 +169,11 @@ class NeuralNet:
         # Printing Results
         self.validation_error_list.append((relative_epoch, round(total_error / len(validation_set), 5)))
         self.validation_accuracy_list.append((relative_epoch, round(correct_pred / len(validation_set), 5)))
-        if verbose and (relative_epoch - 1) != epochs:
+        if verbose:
             print(f"Total Error for Epoch on Validate Set: {round(total_error / len(validation_set), 5)}")
             if task == "monk":
                 print(f"\nAccuracy on Validation: {round(correct_pred / len(validation_set), 5)}")
-        if (relative_epoch - 1) == epochs - 1 and verbose:
+        elif relative_epoch == epochs and grid_search == False:
             print(f"Total Error for Epoch on Validate Set: {round(total_error / len(validation_set), 5)}")
             if task == "monk":
                 print(f"\nAccuracy on Validation: {round(correct_pred / len(validation_set), 5)}")

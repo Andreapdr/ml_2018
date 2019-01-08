@@ -134,18 +134,21 @@ def run_monk_folded():
 
 def run_model_cup_kfold():
     task = "cup"
-    eta = 0.01
-    alpha = 0.4
-    lambd = 0.00
-    eta_decay = 0.001
-    epochs = 250
+    eta = 0.0005
+    alpha = 0.2
+    lambd = 0.0001
+    eta_decay = 0.000
+    epochs = 5
     verbose = False
+    grid_search = False
 
     training_cup = "dataset/blindcup/training_set2.csv"
-    folds = 1
+    folds = 3
     train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
     nn_to_plot = []
     for i in range(len(train_folded)):
+        print(f"\nKFOLD {i + 1} of {folds} _______________________________________")
+
         # initializing network
         nn = NeuralNet("mean_euclidean_error")
 
@@ -153,14 +156,8 @@ def run_model_cup_kfold():
         nn.init_input_layer(10)
 
         # adding layers
-        # nn.init_layer(20, 10, "tanh")
-        # nn.init_layer(20, 20, "tanh")
-        # nn.init_layer(20, 20, "tanh")
-        # nn.init_layer(20, 20, "tanh")
-        # nn.init_layer(2, 20, "linear")
-
-        nn.init_layer(6, 10, "tanh")
-        nn.init_layer(2, 6, "linear")
+        nn.init_layer(10, 10, "tanh")
+        nn.init_layer(2, 10, "linear")
 
         # setting weights xavier init
         nn.set_weights_pre_training()
@@ -168,12 +165,23 @@ def run_model_cup_kfold():
         tr = train_folded[i]
         tval = val_folded[i]
 
-        nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose)
+        nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose, grid_search)
         nn_to_plot.append(nn)
 
-        print(f"KFOLD {i+1} of {folds} _______________________________________")
+    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, "1hL*10N: tanh")
 
-    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, "1hL*6N: tanh")
+    error_kfold_tr = 0
+    error_kfold_val = 0
+    for network in nn_to_plot:
+        error_kfold_tr += network.error_list[-1][1]
+        error_kfold_val += network.validation_error_list[-1][1]
+
+    error_kfold_tr = round(error_kfold_tr / len(train_folded), 5)
+    error_kfold_val = round(error_kfold_val / len(train_folded), 5)
+    print(f"\nNN Architecture: Layers: {len(nn_to_plot[0].layer_list)}, Units x layer: {len(nn_to_plot[0].layer_list[1].net)}"
+          f"\nHyperparameters: eta: {eta}, alpha: {alpha}, lambda: {lambd}, eta decay: {eta_decay}"
+          f"\nAverage final error on training set: {error_kfold_tr}"
+          f"\nAverage final error on validat. set: {error_kfold_val}\n")
 
 
 """ we should run a complete grid search for every network 
@@ -183,34 +191,19 @@ def run_model_cup_kfold():
     n_hidden_layers: the number of hidden layers contained in the network
     n_output_neurons: the number of output neurons """
 def run_grid_search():
-    '''
-    training_cup_path = "dataset/blindcup/training_set2.csv"
-    training_cup = get_dataset(training_cup_path)
-    test_cup_path = "dataset/blindcup/test_set2.csv"
-    test_cup = get_dataset(test_cup_path)
-
-    final_nn = init_manger(1,10,10,2,"mean_euclidean_error", "tanh", "linear")
-    final_nn.train_final(training_cup, 100, 0.001, 0.2, 0.0001, 0.00, False)
-    final_nn.make_prediction(test_cup)
-    exit()
-    '''
-
-    epochs = 15
+    epochs = 25
     n_input = [10]
-    n_neurons_layer = [10]
-    n_hidden_layers = [1]
+    n_neurons_layer = [10, 40]
+    n_hidden_layers = [1, 2]
     n_output_neurons = [2]
 
     act_function_hidden = ["tanh"]
     act_function_output = ["linear"]
     error_function = ["mean_euclidean_error"]
 
-    #eta_deep_gs = [0.0001, 0.001, 0.01, 0.1]
-    eta_deep_gs = [0.01]
-    #alpha_deep_gs = [0.2, 0.4, 0.6, 0.8]
-    alpha_deep_gs = [0.2]
-    #lambd_deep_gs = [0.0001, 0.001, 0.01]
-    lambd_deep_gs = [0.0001]
+    eta_deep_gs = [0.001, 0.01]
+    alpha_deep_gs = [0.2, 0.6]
+    lambd_deep_gs = [0.001, 0.01]
 
     hp_architecture = [n_hidden_layers, n_neurons_layer, n_input, n_output_neurons, error_function,
                        act_function_hidden, act_function_output]
@@ -230,7 +223,8 @@ def run_grid_search():
             lambd = comb[2]
             eta_decay = 0.00
             verbose = False
-            folds = 7
+            grid_search = True
+            folds = 3
             nn_to_plot = []
 
             training_cup_path = "dataset/blindcup/training_set2.csv"
@@ -238,12 +232,12 @@ def run_grid_search():
             train_folded, val_folded = k_fold(training_cup, folds)
 
             for k in range(len(train_folded)):
+                #print(f"KFOLD {k + 1} of {folds} _______________________________________")
                 nn = init_manger(*architecture)
                 tr = train_folded[k]
                 tval = val_folded[k]
-                nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose)
+                nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose, grid_search)
                 nn_to_plot.append(nn)
-                #print(f"KFOLD {k + 1} of {folds} _______________________________________")
 
             plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, architecture)
 
@@ -268,12 +262,12 @@ def run_grid_search():
     print(f"Best model with validation error: {best_val} has eta: {best_comb[0]}, alpha: {best_comb[1]}, lambd: {best_comb[2]}, "
           f"# hidden layers: {best_arch[0]}, # units: {best_arch[1]}\n")
 
-    test_cup_path = "dataset/blindcup/test_set2.csv"
-    test_cup = get_dataset(test_cup_path)
-
-    final_nn = init_manger(*best_arch)
-    final_nn.train_final(training_cup, 100, best_comb[0], best_comb[1], best_comb[2], eta_decay, False)
-    final_nn.make_prediction(test_cup)
+    # test_cup_path = "dataset/blindcup/test_set2.csv"
+    # test_cup = get_dataset(test_cup_path)
+    #
+    # final_nn = init_manger(*best_arch)
+    # final_nn.train_final(training_cup, 100, best_comb[0], best_comb[1], best_comb[2], eta_decay, False)
+    # final_nn.make_prediction(test_cup)
 
 
 def test_init_manager():
@@ -284,6 +278,7 @@ def test_init_manager():
     lambd = 0.01
     epochs = 100
     verbose = True
+    grid_search = False
     training_cup = "dataset/blindcup/training_set.csv"
     folds = 1
     nn_to_plot = []
@@ -291,17 +286,17 @@ def test_init_manager():
     train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
 
     for i in range(len(train_folded)):
+        print(f"KFOLD {i + 1} of {folds} _______________________________________")
         tr = train_folded[i]
         tval = val_folded[i]
-        nn.train(task, tr, tval, epochs, eta, alpha, lambd, verbose)
+        nn.train(task, tr, tval, epochs, eta, alpha, lambd, verbose, grid_search)
         nn_to_plot.append(nn)
-        print(f"KFOLD {i + 1} of {folds} _______________________________________")
 
-    plot_multinetwork(nn_to_plot, eta, 0, folds, 0)
+    plot_multinetwork(nn_to_plot, eta, 0, folds, 0, "test")
 
 
 if __name__ == "__main__":
-    run_grid_search()
-    # run_model_cup_kfold()
+    # run_grid_search()
+    run_model_cup_kfold()
     # run_monk_folded()
     # run_monk()
