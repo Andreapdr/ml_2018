@@ -162,8 +162,8 @@ def plot_multinetwork(network_list, lr, momentum, lambd, folds, architecture):
 
     plt.plot(avg_error_list_x, avg_error_list_y, c="red", label="Average TR")
     plt.plot(avg_val_error_list_x, avg_val_error_list_y, c="blue", label="Average VAL", linestyle="--")
-    # plt.plot(avg_val_error_list_x, avg_val_error_list_y, c="blue", label="Average VAL")
 
+    # plt.ylim(0.40, 4.5)
     plt.grid(True)
     plt.legend()
     temp = str(to_print)
