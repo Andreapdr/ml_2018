@@ -213,7 +213,7 @@ class NeuralNet:
         first = True
         for i in range(len(test_set)):
             bound = len(test_set[i])
-            test_in = test_set[i][1:bound]
+            test_in = test_set[i][1:bound - 2]
             self.feedforward(test_in, "cup")
             out1 = self.layer_list[-1].out[0]
             out2 = self.layer_list[-1].out[1]
@@ -233,9 +233,11 @@ def mean_squared_error(target, output, derivative):
     else:
         res = np.subtract(target, output) ** 2
         res = np.sum(res, axis=0)
-        return res / len(output)
+        return res
+        # return res / len(output)
 
 
+# TODO E QUA DIVIDERE PER 2????
 def mean_euclidean_error(target_value, neurons_out, derivative):
     if derivative:
         err = mean_euclidean_error(target_value, neurons_out, derivative=False)
@@ -243,7 +245,8 @@ def mean_euclidean_error(target_value, neurons_out, derivative):
     res = np.subtract(neurons_out, target_value) ** 2
     res = np.sum(res, axis=0)
     res = np.sqrt(res)
-    return res / len(neurons_out)
+    return res
+    # return res / len(neurons_out)
 
 
 def init_manger(n_layer, n_neurons_layer, n_input, neurons_out_layer, error_func, act_hidden, act_output):

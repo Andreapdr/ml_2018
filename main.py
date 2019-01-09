@@ -29,12 +29,12 @@ def run_monk():
     eta_decay = 0.00
     epochs = 150
     nn.set_weights_pre_training()
-    nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, eta_decay, True)
+    nn.train(task, training_set, validation_set, epochs, eta, alpha, lambd, eta_decay, verbose=True, grid_search=False)
 
     simple_plot(task, nn, eta, alpha)
 
 
-""" Simply run the model on cup dataset (no kfold)"""
+""" Simple run the model on cup dataset (no kfold)"""
 def run_cup():
     training_cup = "dataset/blindcup/training_set.csv"
 
@@ -57,7 +57,7 @@ def run_cup():
     simple_plot(task, nn, eta, alpha)
 
 
-""" Run kfold validation on given dataset - then call for every folding run_cup_folded/run_monk_folded"""
+""" deprecated - - Run kfold validation on given dataset - then call for every folding run_cup_folded/run_monk_folded"""
 def run_kfold_monk():
     training_set = "dataset/monk2/monk2train_onehot.csv"
     folds = 4
@@ -99,13 +99,18 @@ def run_monk_folded():
     eta_decay = 0.0
     epochs = 25
     verbose = True
+    grid_search = False
 
     training_set = "dataset/monk3/monk3train_onehot.csv"
     test_set = "dataset/monk3/monk3test_onehot.csv"
     folds = 4
     train_folded, val_folded = k_fold(get_dataset(training_set), folds)
     nn_to_plot = []
+    # architecture --> [hidden layer, nueroni x hidden, eta, alpha, lambd, act hidden layer]
+    architecture = [1, 3, eta, alpha, lambd, "sigmoid"]
+
     for i in range(len(train_folded)):
+        print(f"KFOLD {i + 1} of {folds} _______________________________________")
         nn = NeuralNet("mean_squared_error")
         nn.init_input_layer(17)
         nn.init_layer(3, 17, "sigmoid")
@@ -114,31 +119,30 @@ def run_monk_folded():
         tr = train_folded[i]
         tval = val_folded[i]
 
-        nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose)
+        nn.train(task, tr, tval, epochs, eta, alpha, lambd, eta_decay, verbose, grid_search)
         nn_to_plot.append(nn)
 
-        print(f"KFOLD {i + 1} of {folds} _______________________________________")
 
-    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, "monk")
+    plot_multinetwork(nn_to_plot, eta, alpha, lambd, folds, architecture)
 
-    tr_f = get_dataset(training_set)
-    ts_f = get_dataset(test_set)
-    nn = NeuralNet("mean_squared_error")
-    nn.init_input_layer(17)
-    nn.init_layer(3, 17, "sigmoid")
-    nn.init_layer(1, 3, "sigmoid")
-    # # Training on whole training_set and "validating" on test_set
-    nn.train(task, tr_f, ts_f, epochs, eta, alpha, lambd, eta_decay, verbose)
-    simple_plot(task, nn, eta, alpha)
+    # tr_f = get_dataset(training_set)
+    # ts_f = get_dataset(test_set)
+    # nn = NeuralNet("mean_squared_error")
+    # nn.init_input_layer(17)
+    # nn.init_layer(3, 17, "sigmoid")
+    # nn.init_layer(1, 3, "sigmoid")
+    # # # Training on whole training_set and "validating" on test_set
+    # nn.train(task, tr_f, ts_f, epochs, eta, alpha, lambd, eta_decay, verbose)
+    # simple_plot(task, nn, eta, alpha)
 
 
 def run_model_cup_kfold():
     task = "cup"
-    eta = 0.0009
+    eta = 0.001
     alpha = 0.2
-    lambd = 0.0001
-    eta_decay = 0.000
-    epochs = 50
+    lambd = 0.0000
+    eta_decay = 0.00
+    epochs = 250
     verbose = True
     grid_search = False
 
@@ -146,8 +150,9 @@ def run_model_cup_kfold():
     folds = 1
     train_folded, val_folded = k_fold(get_dataset(training_cup), folds)
     nn_to_plot = []
-    # architecture --> hidden layer, nueroni x hidden, eta, alpha, lambd, act hidden layer
+    # architecture --> [hidden layer, nueroni x hidden, eta, alpha, lambd, act hidden layer]
     architecture = [1, 40, eta, alpha, lambd, "tanh"]
+
     for i in range(len(train_folded)):
         print(f"\nKFOLD {i + 1} of {folds} _______________________________________")
 
@@ -185,6 +190,9 @@ def run_model_cup_kfold():
           f"\nAverage final error on training set: {error_kfold_tr}"
           f"\nAverage final error on validat. set: {error_kfold_val}\n")
 
+    # nn.train_final(train_folded)
+    # nn.make_prediction(train_folded)
+
 
 """ we should run a complete grid search for every network 
     architecture (hidden_layers/neuron per layer) we want to check...
@@ -193,19 +201,19 @@ def run_model_cup_kfold():
     n_hidden_layers: the number of hidden layers contained in the network
     n_output_neurons: the number of output neurons """
 def run_grid_search():
-    epochs = 25
+    epochs = 500
     n_input = [10]
     n_neurons_layer = [10, 40]
-    n_hidden_layers = [1, 2]
+    n_hidden_layers = [1]
     n_output_neurons = [2]
 
     act_function_hidden = ["tanh"]
     act_function_output = ["linear"]
     error_function = ["mean_euclidean_error"]
 
-    eta_deep_gs = [0.001, 0.01]
-    alpha_deep_gs = [0.2, 0.6]
-    lambd_deep_gs = [0.001, 0.01]
+    eta_deep_gs = [0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.0009]
+    alpha_deep_gs = [0.2, 0.6, 0.8]
+    lambd_deep_gs = [0.0001]
 
     hp_architecture = [n_hidden_layers, n_neurons_layer, n_input, n_output_neurons, error_function,
                        act_function_hidden, act_function_output]
@@ -226,7 +234,7 @@ def run_grid_search():
             eta_decay = 0.00
             verbose = False
             grid_search = True
-            folds = 3
+            folds = 10
             nn_to_plot = []
 
             training_cup_path = "dataset/blindcup/training_set2.csv"
@@ -272,12 +280,43 @@ def run_grid_search():
     # final_nn.make_prediction(test_cup)
 
 
+def run_final_model():
+    task = "cup"
+    eta = 0.001
+    alpha = 0.2
+    lambd = 0.0001
+    eta_decay = 0.000
+    epochs = 500
+    verbose = True
+    grid_search = False
+
+    training_cup = get_dataset("dataset/blindcup/training_set2.csv")
+    # architecture --> [hidden layer, nueroni x hidden, eta, alpha, lambd, act hidden layer]
+    architecture = [1, 40, eta, alpha, lambd, "tanh"]
+
+    # initializing network
+    nn = NeuralNet("mean_euclidean_error")
+
+    # initializing input layer
+    nn.init_input_layer(10)
+
+    # adding layers
+    nn.init_layer(40, 10, "tanh")
+    nn.init_layer(2, 40, "linear")
+
+    # setting weights xavier init
+    nn.set_weights_pre_training()
+
+    nn.train_final(training_cup, epochs, eta, alpha, lambd, eta_decay, verbose)
+    nn.make_prediction(training_cup)
+
+
 def test_init_manager():
     nn = init_manger(2, 5, 10, 2, "mean_euclidean_error", "tanh", "linear")
     task = "cup"
-    eta = 0.001
-    alpha = 0.9
-    lambd = 0.01
+    eta = 0.006
+    alpha = 0.2
+    lambd = 0.0001
     epochs = 100
     verbose = True
     grid_search = False
@@ -302,3 +341,4 @@ if __name__ == "__main__":
     run_model_cup_kfold()
     # run_monk_folded()
     # run_monk()
+    # run_final_model()
