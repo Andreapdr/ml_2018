@@ -237,7 +237,6 @@ def mean_squared_error(target, output, derivative):
         # return res / len(output)
 
 
-# TODO E QUA DIVIDERE PER 2????
 def mean_euclidean_error(target_value, neurons_out, derivative):
     if derivative:
         err = mean_euclidean_error(target_value, neurons_out, derivative=False)
